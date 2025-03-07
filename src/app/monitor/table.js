@@ -1,37 +1,30 @@
 /* eslint-disable @next/next/no-img-element */
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { UptimeBar } from "./uptimebar";
+import axios from "axios";
 
 export default function TableSection() {
-  const [selectedMonitors, setSelectedMonitors] = useState([]);
-  const [selectAll, setSelectAll] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [ selectedMonitors, setSelectedMonitors ] = useState([]);
+  const [ filteredData, setFilteredData] = useState([]);
+  const [ data, setData ] = useState([]); 
+  const [ selectAll, setSelectAll ] = useState(false);
+  const [ searchQuery, setSearchQuery ] = useState("");
+  const [ actionPop, setActionPop ] = useState(false);
+  const [ loading, setLoading ] = useState(true);
 
-  const uptimeData = [
-    { responseTime: "21ms", timeRange: "08:30 - 08:35", status: "UP" },
-    { responseTime: "12ms", timeRange: "08:35 - 08:40", status: "UP" },
-    { responseTime: "5ms", timeRange: "08:40 - 08:45", status: "DOWN" },
-    { responseTime: "7ms", timeRange: "08:45 - 08:50", status: "UP" },
-    { responseTime: "88ms", timeRange: "08:50 - 08:55", status: "UP" },
-    { responseTime: "N/A", timeRange: "08:55 - 09:00", status: "DOWN" },
-    { responseTime: "1003ms", timeRange: "09:00 - 09:05", status: "UP" },
-    { responseTime: "1002ms", timeRange: "09:05 - 09:10", status: "UP" },
-    { responseTime: "2012ms", timeRange: "09:10 - 09:15", status: "UP" },
-    { responseTime: "25ms", timeRange: "09:15 - 09:20", status: "UP" },
-    { responseTime: "N/A", timeRange: "09:20 - 09:25", status: "DOWN" },
-    { responseTime: "35ms", timeRange: "09:25 - 09:30", status: "UP" },
-    { responseTime: "5ms", timeRange: "09:30 - 09:35", status: "UP" },
-    { responseTime: "10ms", timeRange: "09:35 - 09:40", status: "UP" },
-    { responseTime: "2ms", timeRange: "09:40 - 09:45", status: "UP" },
-    { responseTime: "N/A", timeRange: "09:45 - 09:50", status: "DOWN" },
-    { responseTime: "88ms", timeRange: "09:50 - 09:55", status: "UP" },
-    { responseTime: "45ms", timeRange: "09:55 - 10:00", status: "UP" },
-  ];
+  const dropdownRef = useRef(null);
 
-  const testData = [
-    { uuidMonitors: "123", hostname: "Test Server 1", ipaddress: "http://www.google.com/", type: "HTTP", responseTime: "22ms", status: "UP", uptime: uptimeData },
-    { uuidMonitors: "124", hostname: "Test Server 2", ipaddress: "54.22.7.243", type: "Server", responseTime: "25ms", status: "UP", uptime: uptimeData },
-  ];
+  const getData = async () => {
+    try {
+      const response = await axios.get("http://127.0.0.1:5000/api/get_monitor_with_logs/");
+      console.log("Fetched data:", response.data);
+      setData(response.data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Handle individual checkbox change
   const handleCheckboxChange = (uuid) => {
@@ -40,6 +33,8 @@ export default function TableSection() {
         ? prev.filter((id) => id !== uuid) // Uncheck
         : [...prev, uuid] // Check
     );
+    console.log(selectedMonitors);
+    
   };
 
   // Handle "Select All" checkbox
@@ -47,7 +42,7 @@ export default function TableSection() {
     if (selectAll) {
       setSelectedMonitors([]); // Unselect all
     } else {
-      setSelectedMonitors(testData.map((item) => item.uuidMonitors)); // Select all
+      setSelectedMonitors(data.map((item) => item.uuidMonitors)); // Select all
     }
     setSelectAll(!selectAll);
   };
@@ -57,12 +52,54 @@ export default function TableSection() {
     setSearchQuery(event.target.value);
   };
 
-  // Filter testData based on searchQuery (case-insensitive)
-  const filteredData = testData.filter((item) =>
-    item.hostname.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.ipaddress.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.status.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter data based on searchQuery (case-insensitive)
+  // const filteredData = data.filter((item) =>
+  //   item.hostname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //   item.ipaddress.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //   item.status.toLowerCase().includes(searchQuery.toLowerCase())
+  // );
+
+  const handleSelectedTrigger = () => {
+    console.log(`Trigger: ${selectedMonitors} ${JSON.stringify(filteredData[0])}`);
+  }
+  const handleSelectedStart = () => {
+    console.log(`Start: ${selectedMonitors}`);
+  }
+  const handleSelectedPause = () => {
+    console.log(`Pause: ${selectedMonitors}`);
+  }
+  const handleSelectedReset = () => {
+    console.log(`Reset: ${selectedMonitors}`);
+  }
+  const handleSelectedDelete = () => {
+    console.log(`Delete: ${selectedMonitors}`);
+  }
+
+  useEffect(() => {
+    if (data.length > 0) {
+      setFilteredData(data.filter((item) =>
+        item.hostname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.ipaddress.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.status.toLowerCase().includes(searchQuery.toLowerCase())
+      ));
+    }
+    
+  }, [data, searchQuery]);
+
+  useEffect(()=> {
+    getData();
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setActionPop(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, []);
+
+
 
   return (
     <main className="flex flex-col">
@@ -82,29 +119,59 @@ export default function TableSection() {
                       onChange={handleSelectAll}
                     />
                   </div>
-                  <div className="text-xs font-medium">{selectedMonitors.length} / {testData.length}</div>
+                  <div className="text-xs font-medium">{selectedMonitors.length} / {data.length}</div>
                 </div>
-                <div className="flex px-3 py-1 items-center gap-2 rounded-sm bg-[#535C91]">
+                <button ref={dropdownRef} onClick={() => setActionPop(!actionPop)} className="relative flex px-3 py-1 items-center gap-2 rounded-sm bg-[#535C91] cursor-pointer">
                   <div className="text-sm font-medium">Action</div>
                   <div className="w-0 h-0 border-l-4 border-r-4 border-t-6 border-transparent border-t-white"></div>
-                </div>
-                <div className="flex px-3 py-1 items-center gap-2 rounded-sm bg-[#535C91]">
+                  {actionPop && (
+                    <div className="absolute top-8 text-sm w-[145px] bg-[#535C91] -translate-x-3 text-start flex flex-col rounded-sm divide-y divide-gray-400">
+                      <a onClick={handleSelectedTrigger} className="font-medium px-3 py-1 rounded-t-sm hover:bg-white/20 flex items-center gap-3">
+                        <img src="/icon-radar2.svg" alt="" className="h-[15px]" />
+                        <p>Trigger Log</p>
+                      </a>
+                      <a onClick={handleSelectedStart} className="font-medium px-3 py-1 rounded-t-sm hover:bg-white/20 flex items-center gap-3">
+                        <img src="/icon-start.svg" alt="" className="h-[15px]" />
+                        <p>Start</p>
+                      </a>
+                      <a onClick={handleSelectedPause} className="font-medium px-3 py-1 hover:bg-white/20 flex items-center gap-3">
+                        <img src="/icon-paused.svg" alt="" className="h-[15px] ml-[2px]" />
+                        <p>Pause</p>
+                      </a>
+                      <a onClick={handleSelectedReset} className="font-medium px-3 py-1 hover:bg-white/20 flex items-center gap-3">
+                        <img src="/icon-reset.svg" alt="" className="h-[15px]" />
+                        <p>Reset Logs</p>
+                      </a>
+                      <a onClick={handleSelectedDelete} className="font-medium bg-red-400 px-3 py-1 rounded-b-sm hover:bg-white/20 flex items-center gap-3">
+                        <img src="/icon-trash.svg" alt="" className="h-[15px] mb-[2px]" />
+                        <p>Delete</p>
+                      </a>
+                    </div>
+                  )}
+                </button>
+                <button className="flex relative px-3 py-1 items-center gap-2 rounded-sm bg-[#535C91] cursor-pointer">
                   <div className="text-sm font-medium">Type</div>
                   <div className="w-0 h-0 border-l-4 border-r-4 border-t-6 border-transparent border-t-white"></div>
-                </div>
+                </button>
               </div>
-              {/* Search bar */}
-              <div className="relative max-w-xs">
-                <label htmlFor="hs-table-search" className="sr-only">Search</label>
-                <input
-                  type="text"
-                  name="hs-table-search"
-                  id="hs-table-search"
-                  className="py-1.5 sm:py-2 px-4 block w-[300px] bg-white text-black shadow-2xs rounded-lg text-xs"
-                  placeholder="Search by hostname or address..."
-                  value={searchQuery} // 🔍 Bind input to state
-                  onChange={handleSearchChange} // 🔍 Handle change
-                />
+              {/* Search bar & Filter Button */}
+              <div className="flex gap-1">
+                <div className="flex px-3 py-1 items-center gap-2 rounded-sm bg-[#535C91]">
+                  <div className="text-sm font-medium">Filter</div>
+                  <div className="w-0 h-0 border-l-4 border-r-4 border-t-6 border-transparent border-t-white"></div>
+                </div>
+                <div className="relative max-w-xs">
+                  <label htmlFor="hs-table-search" className="sr-only">Search</label>
+                  <input
+                    type="text"
+                    name="hs-table-search"
+                    id="hs-table-search"
+                    className="py-1.5 sm:py-2 px-4 block w-[300px] bg-white text-black shadow-2xs rounded-sm text-xs"
+                    placeholder="Search by hostname or address..."
+                    value={searchQuery} // 🔍 Bind input to state
+                    onChange={handleSearchChange} // 🔍 Handle change
+                  />
+                </div>
               </div>
             </section>
 
@@ -130,9 +197,14 @@ export default function TableSection() {
                     <th className="pr-12 py-3 text-end text-xs font-medium text-white uppercase rounded-r-sm">Action</th>
                   </tr>
                 </thead>
+
                 <tbody>
-                  {filteredData.length > 0 ? (
-                    filteredData.map((item, index) => (
+                  {loading ? [...Array(5)].map((_, index) => (
+                    <tr key={index} className={`${index % 2 === 0 ? 'bg-[#9290C3]/50' : 'bg-[#535C91]/50'} hover:bg-white/10`}>
+                      <td colSpan={6} className="px-6 py-4 rounded-sm h-[55px] items-center"><div className="loader h-1.5 rounded-full"></div></td>
+                    </tr>
+                    )) : 
+                    filteredData.length > 0 ? (filteredData.map((item, index) => (
                       <tr key={item.uuidMonitors} className={`${index % 2 === 0 ? 'bg-[#9290C3]/50' : 'bg-[#535C91]/50'} hover:bg-white/10`}>
                         {/* Checkbox Column */}
                         <td className="py-3 ps-4 rounded-l-sm">
@@ -158,6 +230,7 @@ export default function TableSection() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-white text-center">{item.hostname}</td>
 
                         {/* Status Column */}
+                        
                         <td className="px-6 py-4 whitespace-nowrap font-medium text-white place-items-center">
                           <div className="flex items-center gap-2">
                             <div className={`w-6 h-6 ${item.status === 'UP' ? 'bg-green-400' : 'bg-red-400'} rounded-full flex justify-center items-center animate-pulse`}>
@@ -172,17 +245,17 @@ export default function TableSection() {
 
                         {/* Uptime Column */}
                         <td className="px-6 py-4 whitespace-nowrap text-sm place-items-center font-medium text-white">
-                          <UptimeBar data={item.uptime}/>
+                          <UptimeBar data={item.logs}/>
                           <p className="text-xs text-gray-400">Uptime: 24d, 4h, 10m</p>
                         </td>
 
                         {/* Actions Column */}
                         <td className="px-6 py-4 whitespace-nowrap text-end text-sm font-medium rounded-r-sm">
-                          <button className="inline-flex bg-[#1B1A55] px-3 py-1 items-center gap-1 rounded-sm">
+                          <button className="inline-flex bg-[#1B1A55] px-3 py-1 items-center gap-1 rounded-sm cursor-pointer">
                             <img src="/icon-info.svg" alt="" className="h-[14px]"/>
                             <p>Detail</p>
                           </button>
-                          <button className="bg-[#F65D60] p-1.5 rounded-sm ml-[3px]">
+                          <button className="bg-[#F65D60] p-1.5 rounded-sm ml-[3px] cursor-pointer">
                             <img src="/icon-trash.svg" alt="" className="h-[15px]"/>
                           </button>
                         </td>

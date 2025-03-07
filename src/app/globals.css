@@ -15,6 +15,24 @@
   animation: pulse-animation 2s infinite;
 }
 
+.loader {
+  background-color: #232323;
+  background: linear-gradient(100deg,
+  rgba(146, 144, 149, 0) 40%,
+  rgb(83, 92, 145) 50%,
+  rgba(255, 255, 255, 0) 60%) #070F2B;
+  background-size: 200% 100%;
+  background-position-x: 180%;
+  animation: 2s loading ease-in-out infinite;
+}
+
+@keyframes loading {
+  to {
+      background-position-x: -30%;
+  }
+}
+
+
 @keyframes pulse-animation {
   0% {
     box-shadow: 0 0 0 0px rgba(0, 255, 127, 1);
