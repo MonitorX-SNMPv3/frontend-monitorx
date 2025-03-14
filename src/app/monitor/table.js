@@ -112,12 +112,16 @@ export default function TableSection() {
                 {/* Selected Checkbox */}
                 <div className="px-3 py-1 flex items-center gap-2 bg-[#535C91] rounded-sm">
                   <div className="flex items-center h-5">
-                    <input 
-                      type="checkbox"
-                      className="border-gray-200 rounded-sm text-red-500 focus:ring-red-500"
-                      checked={selectAll}
-                      onChange={handleSelectAll}
-                    />
+                    <label className="relative flex items-center cursor-pointer">
+                      <input type="checkbox" className="peer hidden" checked={selectAll} onChange={handleSelectAll}/>
+                      <div className="w-4 h-4 border-2 border-[#9290C3] rounded-sm flex items-center justify-center peer-checked:bg-[#9290C3]">
+                        {selectAll && (
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        )}
+                      </div>
+                    </label>
                   </div>
                   <div className="text-xs font-medium">{selectedMonitors.length} / {data.length}</div>
                 </div>
@@ -182,12 +186,16 @@ export default function TableSection() {
                   <tr>
                     <th className="py-5 px-4 pe-0 rounded-l-sm">
                       <div className="flex items-center h-5">
-                        <input 
-                          type="checkbox"
-                          className="border-gray-200 rounded-sm text-blue-600 focus:ring-blue-500"
-                          checked={selectAll}
-                          onChange={handleSelectAll}
-                        />
+                        <label className="relative flex items-center cursor-pointer">
+                          <input type="checkbox" className="peer hidden" checked={selectAll} onChange={handleSelectAll}/>
+                          <div className="w-4 h-4 border-2 border-[#9290C3] rounded-sm flex items-center justify-center peer-checked:bg-[#9290C3]">
+                            {selectAll && (
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                            )}
+                          </div>
+                        </label>
                       </div>
                     </th>
                     <th className="px-6 py-3 text-start text-xs font-medium text-white uppercase">Monitor Address</th>
@@ -208,14 +216,16 @@ export default function TableSection() {
                       <tr key={item.uuidMonitors} className={`${index % 2 === 0 ? 'bg-[#9290C3]/50' : 'bg-[#535C91]/50'} hover:bg-white/10`}>
                         {/* Checkbox Column */}
                         <td className="py-3 ps-4 rounded-l-sm">
-                          <div className="flex items-center h-5">
-                            <input 
-                              type="checkbox"
-                              className="border-gray-200 rounded-sm text-blue-600 focus:ring-blue-500"
-                              checked={selectedMonitors.includes(item.uuidMonitors)}
-                              onChange={() => handleCheckboxChange(item.uuidMonitors)}
-                            />
-                          </div>
+                          <label className="relative flex items-center cursor-pointer">
+                            <input type="checkbox" className="peer hidden" checked={selectedMonitors.includes(item.uuidMonitors)} onChange={() => handleCheckboxChange(item.uuidMonitors)}/>
+                            <div className="w-4 h-4 border-2 border-[#9290C3] rounded-sm flex items-center justify-center peer-checked:bg-[#1B1A55] peer-checked:border-[#1B1A55]">
+                              {selectedMonitors.includes(item.uuidMonitors) && (
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                  <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                              )}
+                            </div>
+                          </label>
                         </td>
 
                         {/* IP Address and Type Column */}
