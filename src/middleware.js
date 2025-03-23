@@ -1,24 +1,30 @@
 import { NextResponse } from "next/server";
 
 export function middleware(req) {
-    const session = req.cookies.get("connect.sid"); // Sesuaikan dengan nama session cookie Anda
+    const token = req.cookies.get("token"); // Ambil token dari cookies
     const { pathname } = req.nextUrl;
+
+    // console.log("📌 Middleware Debugging:");
+    // console.log(`🔹 Pathname: ${pathname}`);
+    // console.log(`🔹 Token: ${token ? "✅ Ada Token" : "❌ Tidak Ada Token"}`);
 
     // Jangan ganggu akses ke public assets dan Next.js API
     if (
         pathname.startsWith("/login") ||
         pathname.startsWith("/_next/") || 
         pathname.startsWith("/favicon.ico") ||
-        pathname.startsWith("/public/")
+        pathname.endsWith(".svg")
     ) {
+        // console.log("🔹 Public asset detected, skipping middleware...");
         return NextResponse.next();
-    }
+    }    
 
-    // Redirect ke login jika user tidak memiliki sesi
-    if (!session) {
-        return NextResponse.redirect(new URL("/login", req.url));
-    }
+    // if (!token) {
+    //     console.log("🚫 Tidak ada token, redirect ke /login");
+    //     return NextResponse.redirect(new URL("/login", req.url));
+    // }
 
+    // console.log("✅ Token valid, lanjutkan request...");
     return NextResponse.next();
 }
 

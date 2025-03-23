@@ -1,16 +1,15 @@
-import { cookies } from "next/headers";
-import api from "../utils/api"; // Helper API untuk backend Express.js
+import api from "@/utils/api";
+import axios from "axios";
 
-export async function getUserSession() {
-    const sessionCookie = cookies().get("connect.sid")?.value;
-    if (!sessionCookie) return null;
-
+export const checkAuth = async (ctx) => {
     try {
-        const res = await api.get("/me", {
-            headers: { Cookie: `connect.sid=${sessionCookie}` },
+        const { data } = await api.get(`/me`, {
+            headers: ctx.req ? { cookie: ctx.req.headers.cookie || "" } : {},
+            withCredentials: true,
         });
-        return res.data;
+
+        return { isLoggedIn: data.isLoggedIn, user: data.user };
     } catch (error) {
-        return null;
+        return { isLoggedIn: false, user: null };
     }
-}
+};

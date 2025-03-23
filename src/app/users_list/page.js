@@ -11,7 +11,7 @@ export default function UserList() {
       <NavigationSidebar path={pathname}/>
       <section className="w-full">
         <div className="w-full h-full p-20 text-white">
-          <h1 className="text-5xl">User List Page</h1>
+          <h1 className="text-5xl">Coming soon...</h1>
         </div>
       </section>
     </div>

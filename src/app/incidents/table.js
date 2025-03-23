@@ -1,30 +1,30 @@
-/* eslint-disable @next/next/no-img-element */
 import { useEffect, useRef, useState } from "react";
-import { UptimeBar } from "./uptimebar";
-import axios from "axios";
 
-export default function TableSection() {
+/* eslint-disable @next/next/no-img-element */
+export default function TableIncidents() {
+  const [ searchQuery, setSearchQuery ] = useState("");
   const [ selectedMonitors, setSelectedMonitors ] = useState([]);
   const [ filteredData, setFilteredData] = useState([]);
-  const [ data, setData ] = useState([]); 
   const [ selectAll, setSelectAll ] = useState(false);
-  const [ searchQuery, setSearchQuery ] = useState("");
   const [ actionPop, setActionPop ] = useState(false);
   const [ loading, setLoading ] = useState(true);
+  const [ data, setData ] = useState([]);
 
   const dropdownRef = useRef(null);
 
   const getData = async () => {
-    try {
-      const response = await axios.get("http://127.0.0.1:5000/api/get_monitor_with_logs/");
-      console.log("Fetched data:", response.data);
-      setData(response.data);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      setData([]);
-    } finally {
-      setLoading(false);
-    }
+    // try {
+    //   const response = await axios.get("http://127.0.0.1:5000/api/get_monitor_with_logs/");
+    //   console.log("Fetched data:", response.data);
+    //   setData(response.data);
+    // } catch (error) {
+    //   console.error("Error fetching data:", error);
+    // } finally {
+    //   setLoading(false);
+    // }
+
+    setData(testdata);
+    setLoading(false);
   };
 
   // Handle individual checkbox change
@@ -43,7 +43,7 @@ export default function TableSection() {
     if (selectAll) {
       setSelectedMonitors([]); // Unselect all
     } else {
-      setSelectedMonitors(data.map((item) => item.uuidMonitors)); // Select all
+      setSelectedMonitors(data.map((item) => item.uuidLogs)); // Select all
     }
     setSelectAll(!selectAll);
   };
@@ -52,13 +52,6 @@ export default function TableSection() {
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
   };
-
-  // Filter data based on searchQuery (case-insensitive)
-  // const filteredData = data.filter((item) =>
-  //   item.hostname.toLowerCase().includes(searchQuery.toLowerCase()) ||
-  //   item.ipaddress.toLowerCase().includes(searchQuery.toLowerCase()) ||
-  //   item.status.toLowerCase().includes(searchQuery.toLowerCase())
-  // );
 
   const handleSelectedTrigger = () => {
     console.log(`Trigger: ${selectedMonitors} ${JSON.stringify(filteredData[0])}`);
@@ -77,15 +70,15 @@ export default function TableSection() {
   }
 
   useEffect(() => {
-    if (data.length > 0) {
-      setFilteredData(data.filter((item) =>
-        item.hostname.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.ipaddress.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.status.toLowerCase().includes(searchQuery.toLowerCase())
-      ));
-    }
-    
-  }, [data, searchQuery]);
+      if (data.length > 0) {
+        setFilteredData(data.filter((item) =>
+          item.hostname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.ipaddress.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.status.toLowerCase().includes(searchQuery.toLowerCase())
+        ));
+      }
+      
+    }, [data, searchQuery]);
 
   useEffect(()=> {
     getData();
@@ -100,9 +93,7 @@ export default function TableSection() {
     }
   }, []);
 
-
-
-  return (
+  return(
     <main className="flex flex-col">
       <div className="-m-1.5 overflow-x-auto">
         <div className="p-1.5 min-w-full inline-block align-middle">
@@ -199,10 +190,12 @@ export default function TableSection() {
                         </label>
                       </div>
                     </th>
-                    <th className="px-6 py-3 text-start text-xs font-medium text-white uppercase">Monitor Address</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-white uppercase">Hostname</th>
                     <th className="px-6 py-3 text-center text-xs font-medium text-white uppercase">Status</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-white uppercase">History</th>
+                    <th className="px-6 py-3 text-start text-xs font-medium text-white uppercase">Hostname</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-white uppercase">Root Cause</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-white uppercase">Started</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-white uppercase">Resolved</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-white uppercase">Duration</th>
                     <th className="pr-12 py-3 text-end text-xs font-medium text-white uppercase rounded-r-sm">Action</th>
                   </tr>
                 </thead>
@@ -210,17 +203,18 @@ export default function TableSection() {
                 <tbody>
                   {loading ? [...Array(5)].map((_, index) => (
                     <tr key={index} className={`${index % 2 === 0 ? 'bg-[#9290C3]/50' : 'bg-[#535C91]/50'} hover:bg-white/10`}>
-                      <td colSpan={6} className="px-6 py-4 rounded-sm h-[55px] items-center"><div className="loader h-1.5 rounded-full"></div></td>
+                      <td colSpan={8} className="px-6 py-4 rounded-sm h-[55px] items-center"><div className="loader h-1.5 rounded-full"></div></td>
                     </tr>
                     )) : 
                     filteredData.length > 0 ? (filteredData.map((item, index) => (
-                      <tr key={item.uuidMonitors} className={`${index % 2 === 0 ? 'bg-[#9290C3]/50' : 'bg-[#535C91]/50'} hover:bg-white/10`}>
+                      <tr key={item.uuidLogs} className={`${index % 2 === 0 ? 'bg-[#9290C3]/50' : 'bg-[#535C91]/50'} hover:bg-white/10`}>
+                        
                         {/* Checkbox Column */}
                         <td className="py-3 ps-4 rounded-l-sm">
                           <label className="relative flex items-center cursor-pointer">
-                            <input type="checkbox" className="peer hidden" checked={selectedMonitors.includes(item.uuidMonitors)} onChange={() => handleCheckboxChange(item.uuidMonitors)}/>
+                            <input type="checkbox" className="peer hidden" checked={selectedMonitors.includes(item.uuidLogs)} onChange={() => handleCheckboxChange(item.uuidLogs)}/>
                             <div className="w-4 h-4 border-2 border-[#9290C3] rounded-sm flex items-center justify-center peer-checked:bg-[#1B1A55] peer-checked:border-[#1B1A55]">
-                              {selectedMonitors.includes(item.uuidMonitors) && (
+                              {selectedMonitors.includes(item.uuidLogs) && (
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                                   <polyline points="20 6 9 17 4 12" />
                                 </svg>
@@ -228,40 +222,31 @@ export default function TableSection() {
                             </div>
                           </label>
                         </td>
+                        
+                        {/* Status Column */}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-white text-center">{item.status}</td>
 
-                        {/* IP Address and Type Column */}
+                        {/* IP Address and Hostname Column */}
                         <td className="px-6 whitespace-nowrap font-medium text-white">
                           <div className="flex flex-col">
-                            <p className="text-sm">{item.ipaddress}</p>
-                            <p className="text-xs text-gray-400">Type: {item.type}</p>
+                            <p className="text-sm">{item.hostname}</p>
+                            <p className="text-xs text-gray-400">{item.ipaddress}</p>
                           </div>
                         </td>
 
-                        {/* Hostname Column */}
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-white text-center">{item.hostname}</td>
+                        {/* Root Cause Column */}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-white text-center">{item.rootcause}</td>
 
-                        {/* Status Column */}
+                        {/* Started Column */}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-white text-center">{item.started}</td>
+
+                        {/* Resolved Column */}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-white text-center">
+                          {item.resolved ? <p>{item.resolved}</p> : <p>-</p>}
+                        </td>
                         
-                        <td className="px-6 py-4 whitespace-nowrap font-medium text-white place-items-center">
-                          <div className="flex items-center gap-2">
-                            <div className={`w-6 h-6 ${item.logs[0]?.status === 'UP' || item.logs.length === 0 ? 'bg-green-400' : 'bg-red-400'} rounded-full flex justify-center items-center animate-pulse`}>
-                              {item.logs[0]?.status === 'UP' || item.logs.length === 0 ? 
-                                <div className="w-0 h-0 border-l-4 border-r-4 border-b-6 border-transparent border-b-white"></div>
-                                : <div className="w-0 h-0 border-l-4 border-r-4 border-t-6 border-transparent border-t-white"></div>
-                              }
-                            </div>
-                            <div className="flex flex-col">
-                              <p className="text-sm">{item.logs[0]?.status}</p>
-                              <p className="text-xs text-gray-400">Ping: {item.logs[0]?.responseTime ? `${item.logs[0].responseTime}ms`  : `0ms`}</p>
-                            </div>
-                          </div>
-                        </td>
-
-                        {/* Uptime Column */}
-                        <td className="px-6 py-4 whitespace-nowrap text-sm place-items-center font-medium text-white">
-                          <UptimeBar data={item.logs}/>
-                          <p className="text-xs text-gray-400">{item.logs[0]?.uptime}</p>
-                        </td>
+                        {/* Duration Column */}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-white text-center">{item.duration}</td>
 
                         {/* Actions Column */}
                         <td className="px-6 py-4 whitespace-nowrap text-end text-sm font-medium rounded-r-sm">
@@ -277,7 +262,7 @@ export default function TableSection() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="6" className="bg-[#9290C3]/50 rounded-sm text-center text-white py-5">No results found</td>
+                      <td colSpan="8" className="bg-[#9290C3]/50 text-center text-white py-4">No results found</td>
                     </tr>
                   )}
                 </tbody>
@@ -287,5 +272,28 @@ export default function TableSection() {
         </div>
       </div>
     </main>
-  );
+  )
 }
+
+const testdata = [
+  {
+    "uuidLogs": "12345",
+    "status": "Ongoing",
+    "ipaddress": "192.168.1.1",
+    "hostname": "Test Host 1",
+    "rootcause": "Connection Timeout",
+    "started": "2025-03-23T09:00:00Z",
+    "resolved": "",
+    "duration": "44h 55m 23s",
+  },
+  {
+    "uuidLogs": "12346",
+    "status": "Resolved",
+    "ipaddress": "192.168.1.1",
+    "hostname": "Test Host 2",
+    "rootcause": "Connection Timeout",
+    "started": "2025-03-23T09:00:00Z",
+    "resolved": "2025-03-23T09:30:00Z",
+    "duration": "44h 55m 23s",
+  },
+]
