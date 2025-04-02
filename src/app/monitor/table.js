@@ -1,7 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 import { useEffect, useRef, useState } from "react";
-import { UptimeBar } from "./uptimebar";
+import { UptimeBar } from "../../component/uptimebar";
 import axios from "axios";
+import Link from "next/link";
 
 export default function TableSection() {
   const [ selectedMonitors, setSelectedMonitors ] = useState([]);
@@ -14,23 +15,19 @@ export default function TableSection() {
 
   const dropdownRef = useRef(null);
 
-  // const getData = async () => {
-  //   try {
-  //     const response = await axios.get("http://127.0.0.1:5000/api/get_monitor_with_logs/");
-  //     console.log("Fetched data:", response.data);
-  //     setData(response.data);
-  //   } catch (error) {
-  //     console.error("Error fetching data:", error);
-  //     setData([]);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+  const getData = async () => {
+    try {
+      const response = await axios.get("http://127.0.0.1:5000/api/get_monitor_with_logs/");
+      console.log("Fetched data:", response.data);
+      setData(response.data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const getDataDummy = () => {
-    setData(DummyData);
-    setLoading(false);
-  }
 
   // Handle individual checkbox change
   const handleCheckboxChange = (uuid) => {
@@ -66,7 +63,7 @@ export default function TableSection() {
   // );
 
   const handleSelectedTrigger = () => {
-    console.log(`Trigger: ${selectedMonitors} ${JSON.stringify(filteredData[0])}`);
+    console.log(`Trigger: ${selectedMonitors} ${JSON.stringify(filteredData)}`);
   }
   const handleSelectedStart = () => {
     console.log(`Start: ${selectedMonitors}`);
@@ -93,7 +90,7 @@ export default function TableSection() {
   }, [data, searchQuery]);
 
   useEffect(()=> {
-    getDataDummy();
+    getData();
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setActionPop(false);
@@ -249,15 +246,15 @@ export default function TableSection() {
                         
                         <td className="px-6 py-4 whitespace-nowrap font-medium text-white place-items-center">
                           <div className="flex items-center gap-2">
-                            <div className={`w-6 h-6 ${item.logs[0]?.status === 'UP' || item.logs.length === 0 ? 'bg-green-400' : 'bg-red-400'} rounded-full flex justify-center items-center animate-pulse`}>
-                              {item.logs[0]?.status === 'UP' || item.logs.length === 0 ? 
+                            <div className={`w-6 h-6 ${item.logs[item.logs?.length - 1]?.status === 'UP' || item.logs.length === 0 ? 'bg-green-400' : 'bg-red-400'} rounded-full flex justify-center items-center animate-pulse`}>
+                              {item.logs[item.logs?.length - 1]?.status === 'UP' || item.logs.length === 0 ? 
                                 <div className="w-0 h-0 border-l-4 border-r-4 border-b-6 border-transparent border-b-white"></div>
                                 : <div className="w-0 h-0 border-l-4 border-r-4 border-t-6 border-transparent border-t-white"></div>
                               }
                             </div>
                             <div className="flex flex-col">
-                              <p className="text-sm">{item.logs[0]?.status}</p>
-                              <p className="text-xs text-gray-400">Ping: {item.logs[0]?.responseTime ? `${item.logs[0].responseTime}ms`  : `0ms`}</p>
+                              <p className="text-sm">{item.logs[item.logs?.length - 1]?.status}</p>
+                              <p className="text-xs text-gray-400">Ping: {item.logs[item.logs?.length - 1]?.responseTime ? `${item.logs[item.logs?.length - 1].responseTime}ms`  : `0ms`}</p>
                             </div>
                           </div>
                         </td>
@@ -265,15 +262,15 @@ export default function TableSection() {
                         {/* Uptime Column */}
                         <td className="px-6 py-4 whitespace-nowrap text-sm place-items-center font-medium text-white">
                           <UptimeBar data={item.logs}/>
-                          <p className="text-xs text-gray-400">{item.logs[0]?.uptime}</p>
+                          <p className="text-xs text-gray-400">{item.logs[item.logs?.length - 1]?.uptime}</p>
                         </td>
 
                         {/* Actions Column */}
                         <td className="px-6 py-4 whitespace-nowrap text-end text-sm font-medium rounded-r-sm">
-                          <button className="inline-flex bg-[#1B1A55] px-3 py-1 items-center gap-1 rounded-sm cursor-pointer">
+                          <Link key={item.uuidMonitors} href={`/monitor/${item.uuidMonitors}`} className="inline-flex bg-[#1B1A55] px-3 py-1 items-center gap-1 rounded-sm cursor-pointer">
                             <img src="/icon-info.svg" alt="" className="h-[14px]"/>
                             <p>Detail</p>
-                          </button>
+                          </Link>
                           <button className="bg-[#F65D60] p-1.5 rounded-sm ml-[3px] cursor-pointer">
                             <img src="/icon-trash.svg" alt="" className="h-[15px]"/>
                           </button>
@@ -296,78 +293,3 @@ export default function TableSection() {
 }
 
 
-const DummyData = [
-  {
-      "uuidServers": "fd5c859c-1451-4972-b9a5-cc08860f21cc",
-      "uuidUsers": "5e4fb137-b6f1-44a3-b1b5-01231c1f14bb",
-      "hostname": "Ragnarok Server",
-      "ipaddress": "54.79.45.224",
-      "statusCheck": "5M",
-      "snmp_username": "admin123",
-      "snmp_authkey": "eci108091",
-      "snmp_privkey": "108091eci",
-      "snmp_port": 161,
-      "createdAt": "2025-03-20T06:12:22.577Z",
-      "updatedAt": "2025-03-20T06:12:22.577Z",
-      "uuidMonitors": "fd5c859c-1451-4972-b9a5-cc08860f21cc",
-      "type": "server",
-      "logs": [
-          {
-              "status": "UP",
-              "responseTime": 153,
-              "date": "Saturday 22 March 25",
-              "timeRange": "22:18 - 22:22",
-              "uptime": "22d 1h 51m 22s"
-          },
-          {
-              "status": "UP",
-              "responseTime": 180,
-              "date": "Saturday 22 March 25",
-              "timeRange": "22:22 - 22:27",
-              "uptime": "22d 1h 56m 9s"
-          },
-          {
-              "status": "DOWN",
-              "responseTime": 0,
-              "date": "Saturday 22 March 25",
-              "timeRange": "22:27 - 22:33",
-              "uptime": "N/A"
-          },
-          {
-              "status": "UP",
-              "responseTime": 148,
-              "date": "Saturday 22 March 25",
-              "timeRange": "22:33 - 22:37",
-              "uptime": "22d 2h 6m 9s"
-          },
-          {
-            "status": "UP",
-            "responseTime": 158,
-            "date": "Saturday 22 March 25",
-            "timeRange": "22:37 - 22:42",
-            "uptime": "22d 2h 11m 6s"
-          },
-          {
-              "status": "UP",
-              "responseTime": 167,
-              "date": "Saturday 22 March 25",
-              "timeRange": "22:42 - 22:48",
-              "uptime": "22d 2h 16m 6s"
-          },
-          {
-              "status": "UP",
-              "responseTime": 148,
-              "date": "Saturday 22 March 25",
-              "timeRange": "22:48 - 22:53",
-              "uptime": "22d 2h 21m 11s"
-          },
-          {
-              "status": "UP",
-              "responseTime": 149,
-              "date": "Saturday 22 March 25",
-              "timeRange": "22:53 - 22:58",
-              "uptime": "22d 2h 26m 6s"
-          },
-      ]
-  }
-]

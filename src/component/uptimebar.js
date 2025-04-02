@@ -1,6 +1,9 @@
-export const UptimeBar = ({ data }) => {
-  let latestData = data.slice(-20);
-  let missingCount = 20 - latestData.length;
+export const UptimeBar = ({ 
+  data, 
+  length=20,
+}) => {
+  let latestData = data.slice(-length);
+  let missingCount = length - latestData.length;
 
   return (
     <div className="flex items-center gap-2">

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import ServerMonitorTable from "./table";
 import TableSection from "./table";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 export default function MonitorPage() {
   const pathname = usePathname();
@@ -13,9 +14,31 @@ export default function MonitorPage() {
   return(
     <div className="min-h-[100vh] flex bg-gradient-to-br from-[#070F2B] to-[#1B1A55] p-[21px]">
       <NavigationSidebar path={pathname}/>
-      <section className="w-full">
-        <div className="w-full h-full px-[50px] py-[30px] text-white">
-          <h1 className="text-[24px] font-bold mb-2">Monitor Page</h1>
+      <section className="w-full flex justify-center">
+        <div className="w-[1200px] h-full px-[20px] text-white">
+          
+          {/* Breadcrumb */}
+          <div className="bg-[#1B1A55]/80 px-3 py-2 rounded-sm mb-2">
+            <ol className="flex items-center whitespace-nowrap">
+              <li className="inline-flex items-center">
+                <Link className="flex items-center text-xs font-medium text-[#535C91] hover:text-blue-600 focus:outline-hidden focus:text-blue-600" href="/">
+                  Dashboard
+                </Link>
+                <svg className="shrink-0 mx-2 size-4 text-white" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m9 18 6-6-6-6"></path>
+                </svg>
+              </li>
+              <li className="inline-flex items-center text-xs font-bold text-white/70 truncate" aria-current="page">
+                Monitor
+              </li>
+            </ol>
+          </div> 
+
+          <div className="border-1 px-5 py-2 rounded-sm mb-2 border-[#535C91]">
+            <h1 className="text-[24px] font-bold">Monitor Page</h1>
+          </div>
+          
+          {/* Card */}
           <div className="flex gap-3">
             <div className="flex flex-col gap-2 w-fit bg-[#535C91] px-5 py-3 rounded-sm">
               <p className="font-medium">Monitor status</p>
@@ -48,6 +71,8 @@ export default function MonitorPage() {
               </div>
             </div>
           </div>
+
+          {/* Table Section */}
           <div>
             <TableSection/>
           </div>

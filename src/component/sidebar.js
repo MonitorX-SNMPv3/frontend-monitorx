@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function NavigationSidebar({ path }) {
     return(
-        <div className="flex flex-col place-items-start w-[290px] bg-[#1B1A55] rounded-sm px-3 py-10 justify-between">
+        <aside className="flex flex-col place-items-start w-[290px] bg-[#1B1A55] rounded-sm px-3 py-10 justify-between">
             <div className="w-full">
                 <Link href="/" className="flex flex-col p-3">
                     <p className="text-[#5A618E] font-bold text-4xl font-spartan p-0 leading-[0.75]">
@@ -45,6 +45,6 @@ export default function NavigationSidebar({ path }) {
                     <p>Logout</p>
                 </button>
             </div>
-        </div>
+        </aside>
     )
 }
