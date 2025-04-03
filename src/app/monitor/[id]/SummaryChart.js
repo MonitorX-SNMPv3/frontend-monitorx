@@ -31,9 +31,10 @@ const GetData = async () => {
   }));
 };
 
-const UsageChart = () => {
-  const [selectedChart, setSelectedChart] = useState("usage");
+const UsageChart = ({ type }) => {
+  const [selectedChart, setSelectedChart] = useState("responseTime");
   const [series, setSeries] = useState([]);
+  const [ data, setData ] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -93,12 +94,14 @@ const UsageChart = () => {
     <div className="w-full p-4 bg-[#535C91] shadow-md rounded-lg">
       <div className="flex justify-between pl-4 pr-5 mb-4 mt-2">
         <h2 className="text-xs font-semibold ">{selectedChart === "usage" ? "CPU, RAM, and Disk Usage Trend (24 Hours)" : "Response Time Trend (24 Hours)"}</h2>
-        <button 
+        { type === "server" &&
+          <button 
           onClick={() => setSelectedChart(selectedChart === "usage" ? "responseTime" : "usage")}
           className="px-4 py-1.5 bg-[#1B1A55] text-white rounded-md text-xs"
-        >
-          {selectedChart === "usage" ? "Show Response Time" : "Show Usage"}
-        </button>
+          >
+            {selectedChart === "usage" ? "Show Response Time" : "Show Usage"}
+          </button>
+        }
       </div>
       <Chart options={options} series={series} type="line" height={225} />
     </div>

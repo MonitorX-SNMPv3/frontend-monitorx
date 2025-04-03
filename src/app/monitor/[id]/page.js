@@ -134,31 +134,33 @@ export default function Page({ params }) {
             </div>
 
             {/* Part 2: SLA, Last 7 Days, Last 30 Days, Last 365 Days,  */}
-            <div className="flex w-full bg-[#535C91] divide-x first:divide-none divide-gray-500 justify-around px-10 py-5 rounded-sm mb-2">
-              <div className="flex flex-col w-[200px] justify-center">
-                <p className="text-xs">Response Time</p>
-                <p className="font-bold text-3xl">{data?.logs?.[data?.logs?.length-1]?.responseTime}<span className="text-xs text-gray-400 font-medium">ms</span></p>
-                <p className="font-bold text-xs text-gray-400">Average: {data?.summary?.avgping} ms<span></span></p>
+            { data?.type === "server" && 
+              <div className="flex w-full bg-[#535C91] divide-x first:divide-none divide-gray-500 justify-around px-10 py-5 rounded-sm mb-2">
+                <div className="flex flex-col w-[200px] justify-center">
+                  <p className="text-xs">Response Time</p>
+                  <p className="font-bold text-3xl">{data?.logs?.[data?.logs?.length-1]?.responseTime}<span className="text-xs text-gray-400 font-medium">ms</span></p>
+                  <p className="font-bold text-xs text-gray-400">Average: {data?.summary?.avgping} ms<span></span></p>
+                </div>
+                <div className="flex flex-col w-[200px] justify-center">
+                  <p className="text-xs">CPU Usage</p>
+                  <p className="font-bold text-3xl">{data?.logs?.[data?.logs?.length-1]?.cpuUsage.replace('%', '')}<span className="text-xs text-gray-400 font-medium">%</span></p>
+                  <p className="font-bold text-xs text-gray-400">Average: {data?.summary?.avgcpu}%</p>
+                </div>
+                <div className="flex flex-col w-[200px] justify-center">
+                  <p className="text-xs">Disk Usage</p>
+                  <p className="font-bold text-3xl">{data?.logs?.[data?.logs?.length-1]?.diskUsage.replace('%', '')}<span className="text-xs text-gray-400 font-medium">%</span></p>
+                  <p className="font-bold text-xs text-gray-400">Average: {data?.summary?.avgdisk}%</p>
+                </div>
+                <div className="flex flex-col w-[200px] justify-center">
+                  <p className="text-xs">RAM Usage</p>
+                  <p className="font-bold text-3xl">{data?.logs?.[data?.logs?.length-1]?.ramUsage.replace('%', '')}<span className="text-xs text-gray-400 font-medium">%</span></p>
+                  <p className="font-bold text-xs text-gray-400">Average: {data?.summary?.avgram}%</p>
+                </div>
               </div>
-              <div className="flex flex-col w-[200px] justify-center">
-                <p className="text-xs">CPU Usage</p>
-                <p className="font-bold text-3xl">{data?.logs?.[data?.logs?.length-1]?.cpuUsage.replace('%', '')}<span className="text-xs text-gray-400 font-medium">%</span></p>
-                <p className="font-bold text-xs text-gray-400">Average: {data?.summary?.avgcpu}%</p>
-              </div>
-              <div className="flex flex-col w-[200px] justify-center">
-                <p className="text-xs">Disk Usage</p>
-                <p className="font-bold text-3xl">{data?.logs?.[data?.logs?.length-1]?.diskUsage.replace('%', '')}<span className="text-xs text-gray-400 font-medium">%</span></p>
-                <p className="font-bold text-xs text-gray-400">Average: {data?.summary?.avgdisk}%</p>
-              </div>
-              <div className="flex flex-col w-[200px] justify-center">
-                <p className="text-xs">RAM Usage</p>
-                <p className="font-bold text-3xl">{data?.logs?.[data?.logs?.length-1]?.ramUsage.replace('%', '')}<span className="text-xs text-gray-400 font-medium">%</span></p>
-                <p className="font-bold text-xs text-gray-400">Average: {data?.summary?.avgram}%</p>
-              </div>
-            </div>
+            }
 
             {/* Part 3: Graph,  */}
-            <SummaryChart/>
+            <SummaryChart type={data?.type}/>
 
             {/* Part 4: Insident Table */}
             <IncidentsTableDetail data = {data}/>
@@ -172,7 +174,5 @@ async function getData(id) {
   const res = await fetch(`http://127.0.0.1:5000/api/get_monitor_with_logs/`);
   
   const items = await res.json();
-  console.log(`Response: ${JSON.stringify(items)}`);
-
   return items.find(item => item.uuidMonitors === id);
 }
