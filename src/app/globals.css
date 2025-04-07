@@ -2,6 +2,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
+:root {
+  --gradient-bg: linear-gradient(to bottom right, #070F2B, #1B1A55);
+}
+
+body {
+  background: var(--gradient-bg);
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.custom-toast-container {
+  width: 400px; /* Set your desired width */
+}
 
 .font-spartan {
   font-family: 'League Spartan', sans-serif;
@@ -11,8 +24,16 @@
   font-family: 'Quicksand', sans-serif;
 }
 
-.animate-pulse {
-  animation: pulse-animation 2s infinite;
+.animate-pulse-green {
+  animation: pulse-animation-green 2s infinite;
+}
+
+.animate-pulse-red {
+  animation: pulse-animation-red 2s infinite;
+}
+
+.animate-pulse-gray {
+  animation: pulse-animation-gray 2s infinite;
 }
 
 .loader {
@@ -33,11 +54,29 @@
 }
 
 
-@keyframes pulse-animation {
+@keyframes pulse-animation-green {
   0% {
     box-shadow: 0 0 0 0px rgba(0, 255, 127, 1);
   }
   100% {
     box-shadow: 0 0 0 5px rgba(0, 255, 127, 0);
+  }
+}
+
+@keyframes pulse-animation-red {
+  0% {
+    box-shadow: 0 0 0 0px rgba(255, 116, 108, 1);
+  }
+  100% {
+    box-shadow: 0 0 0 5px rgba(255, 116, 108, 0);
+  }
+}
+
+@keyframes pulse-animation-gray {
+  0% {
+    box-shadow: 0 0 0 0px rgba(255, 255, 255, 1);
+  }
+  100% {
+    box-shadow: 0 0 0 5px rgba(255, 255, 255, 0);
   }
 }

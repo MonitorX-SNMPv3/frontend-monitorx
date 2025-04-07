@@ -1,8 +1,11 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ToastContainer } from "react-toastify";
+import NavigationSidebar from "@/component/sidebar";
+import SidebarWrapper from "@/component/sidebarWrapper";
+import MainContentWrapper from "@/component/MainContentWrapper";
 
-const inter =  Inter({
+const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
 });
@@ -17,7 +20,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={`${inter.variable} antialiased`}>
         <ToastContainer
-          position="top-right"
+          position="top-center"
           autoClose={2500}
           hideProgressBar
           newestOnTop={false}
@@ -27,9 +30,17 @@ export default function RootLayout({ children }) {
           draggable
           pauseOnHover
           theme="colored"
-          className={`font-bold scale-75`}
+          className={`font-bold scale-75 custom-toast-container`}
         />
-        {children}
+        <div className="flex">
+          {/* Fixed Sidebar */}
+          <div className="fixed top-0 left-0 h-screen w-68 text-white p-4">
+            <SidebarWrapper/>
+          </div>
+
+          {/* Main Content */}
+          <MainContentWrapper>{children}</MainContentWrapper>
+        </div>
       </body>
     </html>
   );

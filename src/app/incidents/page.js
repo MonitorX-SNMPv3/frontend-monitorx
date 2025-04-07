@@ -1,38 +1,33 @@
 /* eslint-disable @next/next/no-img-element */
 'use client'
 
-import NavigationSidebar from "@/component/sidebar";
-import axios from "axios";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import TableIncidents from "./table";
 import Link from "next/link";
-// import TableSection from "./table";
+import api from "@/utils/api";
 
 export default function IncidentsPage() {
-  const pathname = usePathname();
-  // const [ loading, setLoading ] = useState(true);
-  // const [ data, setData ] = useState(null);
+  const router = useRouter();
 
-  // const GetData = async () => {
-  //   try {
-  //     const response = await axios.get("http://127.0.0.1:5000/api/get_monitor_with_logs/");
-  //     console.log("Fetched data:", response.data);
-  //     setData(response.data);
-  //   } catch (error) {
-  //     console.error("Error fetching data:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // }
+  const [user, setUser] = useState(null);
 
-  // useEffect(() => {
-  //   GetData();
-  // }, []);
-  
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        const response = await api.get('/me');
+        setUser(response.data.user);
+      } catch (error) {
+        console.log(error);
+        router.push('/login');
+      }
+    };
+
+    checkUser();
+  }, [router]);
+
   return(
-    <div className="min-h-[100vh] flex bg-gradient-to-br from-[#070F2B] to-[#1B1A55] p-[21px]">
-      <NavigationSidebar path={pathname}/>
+    <div className="min-h-[100vh] flex p-[21px]">
       <section className="w-full flex justify-center">
         <div className="w-[1200px] h-full px-[20px] text-white">
 

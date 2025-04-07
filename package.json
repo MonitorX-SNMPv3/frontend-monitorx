@@ -12,6 +12,7 @@
     "apexcharts": "^4.5.0",
     "axios": "^1.8.1",
     "install": "^0.13.0",
+    "jsonwebtoken": "^9.0.2",
     "next": "15.2.1",
     "next-auth": "^4.24.11",
     "npm": "^11.2.0",

@@ -1,32 +1,29 @@
 'use client'
-
 import React from "react";
 import dynamic from "next/dynamic";
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
-const UptimeChart = () => {
+const UptimeChart = ({ data }) => {
+  const hasData = data && data.length > 0;
+
+  const categories = hasData
+    ? data.map(item => item.day.charAt(0).toUpperCase() + item.day.slice(1))
+    : [];
+  const uptimeData = hasData ? data.map(item => item.uptimePercent.toFixed(2)) : [];
+  const downtimeData = hasData ? data.map(item => item.downtimePercent.toFixed(2)) : [];
+
   const series = [
-    {
-      name: "Uptime (%)",
-      data: [97.8, 94.8, 98.5, 97.0, 95.9, 100, 92.8], // Dummy data uptime
-    },
-    {
-      name: "Downtime (%)",
-      data: [2.2, 5.2, 1.5, 3.0, 4.1, 0.0, 7.2], // Dummy data downtime
-    },
+    { name: "Uptime (%)", data: uptimeData },
+    { name: "Downtime (%)", data: downtimeData },
   ];
 
   const options = {
     chart: {
       height: 150,
       type: "line",
-      toolbar: {
-        show: false,
-      },
-      zoom: {
-        enabled: false,
-      },
+      toolbar: { show: false },
+      zoom: { enabled: false },
     },
     stroke: {
       curve: "smooth",
@@ -36,28 +33,13 @@ const UptimeChart = () => {
     grid: {
       strokeDashArray: 0,
       borderColor: "#e5e7eb",
-      padding: {
-        top: -20,
-        right: 0,
-      },
+      padding: { top: -20, right: 0 },
     },
     xaxis: {
       type: "category",
-      categories: [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday",
-      ],
-      axisBorder: {
-        show: false,
-      },
-      axisTicks: {
-        show: false,
-      },
+      categories: categories,
+      axisBorder: { show: false },
+      axisTicks: { show: false },
       labels: {
         offsetY: 5,
         style: {
@@ -82,35 +64,29 @@ const UptimeChart = () => {
           fontFamily: "Inter, ui-sans-serif",
           fontWeight: 400,
         },
-        formatter: (value) => `${value}%`,
+        formatter: value => `${value}%`,
       },
     },
-    tooltip: {
-      theme: "dark",
-    },
+    tooltip: { theme: "dark" },
     legend: {
       labels: {
         colors: ["#FFFFFF", "#FFFFFF"],
         useSeriesColors: false,
-      }
+      },
     },
-    colors: ["#10B981", "#EF4444"], // Hijau untuk uptime, merah untuk downtime
+    colors: ["#10B981", "#EF4444"],
   };
 
   return (
-    <div className="w-full p-4 bg-[#535C91] shadow-md rounded-lg">
+    <div className="w-full p-4 bg-[#535C91] shadow-md rounded-lg relative">
       <div className="flex justify-between pl-4 pr-5 mb-4 mt-2">
         <div className="flex place-items-center">
           <h2 className="text-lg font-semibold">Uptime/Downtime Trend (Weekly)</h2>
         </div>
-        <div className="flex place-items-center">
-          <button className="px-4 py-1.5 bg-[#1B1A55] flex place-items-center gap-2">
-            <div className="text-sm">Uptime</div>
-            <div className="w-0 h-0 border-l-4 border-r-4 border-t-6 border-transparent border-t-white mt-1"></div>
-          </button>
-        </div>
       </div>
-      <Chart options={options} series={series} type="line" height={225}/>
+      <div>
+        <Chart options={options} series={series} type="line" height={225} />
+      </div>
     </div>
   );
 };

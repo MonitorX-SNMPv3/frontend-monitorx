@@ -1,15 +1,16 @@
 'use client'
-import NavigationSidebar from "@/component/sidebar";
+
+import { SendAddData } from "@/services/monitorServices";
 import api from "@/utils/api";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { toast } from "react-toastify";
+import { useEffect, useState } from "react";
 
 export default function AddMonitor() {
   const pathname = usePathname();
   const router = useRouter();
+  const [ uuidUsers, setUuidUsers ] = useState(null);
 
   const [ selectedMonitor, setSelectedMonitor ] = useState("HTTP");
   const [ netsType, setNetsType ] = useState("ROUTER");
@@ -26,6 +27,21 @@ export default function AddMonitor() {
   
   const [ modalOpen, setModalOpen ] = useState(false);
 
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        const response = await api.get('/me');
+        setUuidUsers(response.data.user.uuidUsers);
+      } catch (error) {
+        console.log(error);
+        
+        router.push('/login');
+      }
+    };
+
+    checkUser();
+  }, [router]);
+
   const monitorTypes = [
     {
       name: "HTTP",
@@ -34,10 +50,6 @@ export default function AddMonitor() {
     {
       name: "Ports",
       detail: "Use Port Monitoring to track the availability and response of specific ports on servers.",
-    },
-    {
-      name: "Network",
-      detail: "Use Network Monitoring to monitor switches, routers, and network traffic.",
     },
     {
       name: "Server",
@@ -54,19 +66,21 @@ export default function AddMonitor() {
   const handleSaveButton = async (attribute) => {
     try {
       setLoading(true);
-      await SendData(attribute);
+      const result = await SendAddData(attribute);
+  
+      if (result === true) {
+        router.push('/monitor');
+      }
     } catch (error) {
       console.log(error.message);
-      
     } finally {
       setLoading(false);
-      // router.push('/monitor')
     }
-  }
+  };
+  
 
   return (
-    <div className="min-h-[100vh] flex bg-gradient-to-br from-[#070F2B] to-[#1B1A55] p-[21px] relative">
-      <NavigationSidebar path={pathname} />
+    <div className="min-h-[100vh] w-full flex p-[21px]">
       <section className="w-full flex justify-center">
         <div className="w-[1200px] h-full px-[20px] text-white">
           {/* Breadcrumb */}
@@ -139,44 +153,6 @@ export default function AddMonitor() {
               ))}
             </div>
           </div>
-
-          {/* Notify Method */}
-          {/* <div className="bg-[#1B1A55] rounded-sm px-10 py-5 flex flex-col mb-2">
-            <h1 className="font-bold mb-2">Notify Method</h1>
-            <div className="flex justify-evenly">
-              <div className="w-[200px]">
-                <div className="flex items-center">
-                  <input 
-                    type="checkbox" 
-                    className="peer hidden" 
-                    checked={isChecked} 
-                    onChange={handleCheckboxChange} 
-                  />
-                  <div className="w-4 h-4 border-2 border-[#9290C3] rounded-sm flex items-center justify-center peer-checked:bg-[#9290C3]">
-                    {isChecked && (
-                      <svg 
-                        width="12" 
-                        height="12" 
-                        viewBox="0 0 24 24" 
-                        fill="none" 
-                        stroke="white" 
-                        strokeWidth="3" 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round"
-                      >
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                    )}
-                  </div>
-                </div>
-                <div>Email</div>
-                <div></div>
-              </div>
-              <div className="w-[200px]">Phone</div>
-              <div className="w-[200px]">Telegram</div>
-              <div className="w-[200px]">Whatsapp</div>
-            </div>
-          </div> */}
 
           <div className="bg-[#1B1A55] rounded-sm px-10 py-5 flex justify-evenly mb-2 ">
             {/* Notify Method */}
@@ -275,13 +251,6 @@ export default function AddMonitor() {
 
                 {/* Column 2 */}
                 <div className="flex flex-col w-[200px]">
-                  {selectedMonitor === "Network" && <div className="w-full">
-                    <p className="text-xs font-medium">Network Type</p>
-                    <select onChange={(e) => {setNetsType(e.target.value); console.log(netsType);}} className="bg-white text-black text-[13px] w-[188px] py-1 px-5 outline-none rounded-sm mb-4">
-                      <option value={`ROUTER`}>Router</option>
-                      <option value={`SWITCH`}>Switch</option>
-                    </select>
-                  </div>}
 
                   {selectedMonitor === "Ports" && <div className="w-full">
                     <p className="text-xs font-medium">Protocol</p>
@@ -366,13 +335,13 @@ export default function AddMonitor() {
                 <div className="flex flex-col gap-2">
                   <div>
                     <p className="text-xs font-semibold text-gray-400">
-                      {selectedMonitor !== 'Network' ? 'Ports' : 'Network Type'}
+                      Ports
                     </p>
                     <p className="text-white text-sm font-bold">
-                      {selectedMonitor !== 'Network' ? ports ? ports : 'N/A' : netsType }
+                      {ports ? ports : 'N/A'}
                     </p>
                   </div>
-                  <div className={`${selectedMonitor !== "Network" ? '' : 'hidden'}`}>
+                  <div>
                     <p className="text-xs font-semibold text-gray-400">
                       {selectedMonitor === 'Ports' && `Protocol`}
                       {selectedMonitor === 'Server' && `Username`}
@@ -404,7 +373,7 @@ export default function AddMonitor() {
             {/* Open Modal Button */}
             <button 
               className="mt-4 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition w-full cursor-pointer"
-              onClick={() => {handleSaveButton({selectedMonitor, checkTime, hostname, ipaddress, ports, netsType, protocol, username, authkey, privkey})}}
+              onClick={() => {handleSaveButton({uuidUsers, selectedMonitor, checkTime, hostname, ipaddress, ports, netsType, protocol, username, authkey, privkey})}}
             >
               { loading ? 
               <div className="animate-spin inline-block size-3 border-3 border-current border-t-transparent text-gray-800 rounded-full dark:text-white" role="status" aria-label="loading">
@@ -425,73 +394,4 @@ export default function AddMonitor() {
       )}
     </div>
   );
-}
-
-const SendData = async (attribute) => {
-  let result = {};
-  
-  const timeOptions = ["15S", "30S", "1M", "5M", "15M", "30M", "1H"];
-  
-  try {
-    if ( attribute.selectedMonitor === "HTTP" ) {
-      result = {
-        "uuidUsers": "992e3092-9822-4525-83cd-bbbeef1ffeb8",
-        "hostname": attribute.hostname,
-        "ipaddress": attribute.ipaddress,
-        "statusCheck": timeOptions[attribute.checkTime],
-      }
-      let response = await api.post('http://127.0.0.1:5000/api/add_monitor_http/', result);
-      toast.success(response.data.msg);
-      return;
-    }
-    
-    if ( attribute.selectedMonitor === "Ports" ){
-      result = {
-        "uuidUsers": "992e3092-9822-4525-83cd-bbbeef1ffeb8",
-        "hostname": attribute.hostname,
-        "ipaddress": attribute.ipaddress,
-        "port": attribute.ports,
-        "protocol": attribute.protocol,
-        "statusCheck": timeOptions[attribute.checkTime],
-      }
-      let response = await api.post('http://127.0.0.1:5000/api/add_monitor_port/', result);
-      toast.success(response.data.msg);
-      return;
-    }
-    
-    if ( attribute.selectedMonitor === "Network" ){
-      result = {
-        "uuidUsers": "992e3092-9822-4525-83cd-bbbeef1ffeb8",
-        "hostname": attribute.hostname,
-        "ipaddress": attribute.ipaddress,
-        "type": attribute.netsType,
-        "statusCheck": timeOptions[attribute.checkTime],
-      }
-      let response = await api.post('http://127.0.0.1:5000/api/add_monitor_network/', result);
-      toast.success(response.data.msg);
-      return;
-    }
-    
-    result = {
-      "uuidUsers": "992e3092-9822-4525-83cd-bbbeef1ffeb8",
-      "hostname": attribute.hostname,
-      "ipaddress": attribute.ipaddress,
-      "statusCheck": timeOptions[attribute.checkTime],
-      "snmp_username": attribute.username,
-      "snmp_authkey": attribute.authkey,
-      "snmp_privkey": attribute.privkey,
-      "snmp_port": attribute.ports,
-    };
-    
-    let response = await api.post('http://127.0.0.1:5000/api/add_monitor_server/', result);
-    toast.success(response.data.msg);
-
-  } catch (error) {
-    if (error.response) {
-      toast.error(error.response.data.msg || "Something went wrong!");
-    } else {
-      toast.error("Network error or server not responding.");
-    }
-  }
-  // return alert
 }

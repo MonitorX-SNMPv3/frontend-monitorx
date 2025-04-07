@@ -1,23 +1,42 @@
 /* eslint-disable @next/next/no-img-element */
 'use client'
 
-import NavigationSidebar from "@/component/sidebar";
 import { UptimeBar } from "@/component/uptimebar";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import SummaryChart from "./SummaryChart";
 import IncidentsTableDetail from "./table";
+import api from "@/utils/api";
+import { toast } from "react-toastify";
 
 
 export default function Page({ params }) {
   const [ data, setData ] = useState(null);
   const [ length, setLength ] = useState(0);
+  const [user, setUser] = useState(null);
+  const [ loading, setLoading ] = useState(false);
   const pathname = usePathname();
-  
+  const router = useRouter();
+
   const parameter = React.use(params);
   const id = parameter?.id;
   
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        // Panggil endpoint /me untuk verifikasi user
+        const response = await api.get('/me');
+        setUser(response.data.user);
+      } catch (error) {
+        console.log(error);
+        
+        router.push('/login');
+      }
+    };
+
+    checkUser();
+  }, [router]);
 
   useEffect(()=> {
     async function fetchData() {
@@ -27,11 +46,107 @@ export default function Page({ params }) {
     fetchData();
   }, [id]);
 
-  // if (!data) return <h1>Item Not Found</h1>;
-  
+  const handleButtonStart = async () => {
+    try {
+      const attribute = {
+        uuid: data.uuidMonitors,
+        type: data.type,
+      };
+
+      const res = await api.patch('/start_monitor', attribute);
+
+      if (res.status === 200){
+        toast.success(res.data.msg);
+        setData(prev => ({
+          ...prev,
+          running: "STARTED"
+        }));
+      }
+
+    } catch (error) {
+      if (error.response) {
+        toast.error(error.response.data.msg || "Something went wrong!");
+      } else {
+        toast.error("Network error or server not responding.");
+        console.log('Start', error);
+        
+      }
+    }
+  }
+
+  const handleButtonPause = async () => {
+    try {
+      const attribute = {
+        uuid: data.uuidMonitors,
+        type: data.type,
+      };
+
+      const res = await api.patch('/pause_monitor', attribute);
+      if (res.status === 200){
+        toast.success(res.data.msg);
+        setData(prev => ({
+          ...prev,
+          running: "PAUSED"
+        }));
+      }
+
+    } catch (error) {
+      if (error.response) {
+        toast.error(error.response.data.msg || "Something went wrong!");
+      } else {
+        toast.error("Network error or server not responding.");
+        console.log('Pause', error);
+        
+      }
+    } 
+  }
+
+  const handleButtonExport = async () => {
+    try {
+      const attribute = {
+        uuid: data.uuidMonitors
+      };
+      
+      if (data?.type === "server"){
+        res = await api.post('/monitor_server_pdf', attribute);
+      }
+      
+    } catch (error) {
+      if (error.response) {
+        toast.error(error.response.data.msg || error.message);
+      } else {
+        toast.error("Network error or server not responding.");
+        console.log('Pause', error);
+      }
+    }
+  }
+
+  const handdleButtonTestAlert = async () => {
+    try {
+      const attribute = {
+        uuidUsers: user.uuidUsers,
+        uuidMonitors: data.uuidMonitors,
+        type: data.type
+      };
+
+      setLoading(true);
+
+      const res = await api.post('/test_alert', attribute);
+      
+      if ( res.data ) {
+        toast.success(res.data.msg);
+        setLoading(false);
+      }
+    } catch (error) {
+      if ( error.response ){
+        toast.error(error.response.data.msg)
+        setLoading(false);
+      }
+    }
+  }
+
   return(
-      <div className="min-h-[100vh] flex bg-gradient-to-br from-[#070F2B] to-[#1B1A55] p-[21px] ">
-        <NavigationSidebar path={pathname}/>
+      <div className="min-h-[100vh] w-full flex p-[21px]">
         <section className="w-full flex justify-center">
           <div className="w-[1200px] h-full px-[20px] text-white">
 
@@ -80,18 +195,43 @@ export default function Page({ params }) {
                   </span>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <button className="bg-green-400 cursor-pointer h-fit text-xs py-1.5 rounded-sm flex justify-center place-items-center gap-1 hover:bg-white/10">
-                    <div>Test Alert</div>
-                    <img src="/icons-notification.svg" alt="" className="h-3 mt-0.5"/>
-                  </button>
                   <div className="flex gap-1">
-                    <button className="bg-red-400 cursor-pointer h-fit text-xs px-5  py-1.5 rounded-sm flex justify-center place-items-center gap-1 hover:bg-white/10">
-                      <div>Pause</div>
-                      <img src="/icon-paused.svg" alt="" className="h-[10px] mt-0.5"/>
-                    </button>
-                    <button className="bg-gray-400 cursor-pointer h-fit text-xs px-4  py-1.5 rounded-sm flex justify-center place-items-center gap-1 hover:bg-white/10">
+                    <button className="bg-blue-400 cursor-pointer h-fit text-xs px-5 py-1.5 rounded-sm flex justify-center place-items-center gap-1 hover:bg-white/10">
                       <div>Edit</div>
                       <img src="/icon-edit.svg" alt="" className="h-[10px] mt-0.5"/>
+                    </button>
+                    <button 
+                      onClick={handleButtonExport}
+                      className="bg-[#1B1ABB] cursor-pointer h-fit text-xs px-4  py-1.5 rounded-sm flex justify-center place-items-center gap-1 hover:bg-white/10"
+                    >
+                      <div>Export Summary</div>
+                      <img src="/icon-download.svg" alt="" className="h-[13px] mt-0.5"/>
+                    </button>
+                  </div>
+                  <div className="flex gap-1">
+                    <button 
+                      onClick={data?.running === "PAUSED" ? handleButtonStart : handleButtonPause}
+                      className="bg-red-400 cursor-pointer h-fit text-xs px-8  py-1.5 rounded-sm flex justify-center place-items-center gap-1 hover:bg-white/10"
+                    >
+                      <div>{data?.running === "PAUSED" ? 'Start' : 'Pause'}</div>
+                      <img
+                        src={data?.running === "PAUSED" ? "/icon-start.svg" : "/icon-paused.svg"}
+                        alt=""
+                        className={`${data?.running === "PAUSED" ? 'h-[13px]' : 'h-[10px]'} mt-0.5`}
+                      />
+                    </button>
+                    <button 
+                      onClick={handdleButtonTestAlert} 
+                      className={`${ loading ? 'px-[46px]' : 'px-5'} bg-green-400 cursor-pointer h-fit text-xs py-1.5 rounded-sm flex justify-center place-items-center gap-1 hover:bg-white/10`}
+                    >
+                      <div>
+                        { loading ? 
+                        <div className="animate-spin inline-block size-3 border-3 border-current border-t-transparent text-gray-800 rounded-full dark:text-white" role="status" aria-label="loading">
+                          <span className="sr-only">Loading...</span>
+                        </div> : 'Test Alert'
+                        }
+                      </div>
+                      { !loading && <img src="/icons-notification.svg" alt="" className="h-3 mt-0.5"/> }
                     </button>
                   </div>
                 </div>
@@ -103,13 +243,13 @@ export default function Page({ params }) {
               <div className="bg-[#535C91] w-[300px] rounded-sm px-5 py-4 flex justify-between place-items-center">
                 <div className="flex flex-col">
                   <p className="font-regular text-sm">Status</p>
-                  <p className="font-bold text-xl mr-2 text-green-400">
-                    {data?.logs?.[data.logs?.length - 1]?.status === 'UP' || data?.logs?.length === 0 ? `UP` : `DOWN`}
+                  <p className={`font-bold text-xl mr-2 ${data?.running === "PAUSED" ? 'text-white' : data?.logs?.[data.logs?.length - 1]?.status === 'UP' || data?.logs?.length === 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    { data?.running === "PAUSED" ? 'PAUSED' : data?.logs?.[data.logs?.length - 1]?.status === 'UP' || data?.logs?.length === 0 ? `UP` : `DOWN`}
                   </p>
-                  <p className="text-sm text-gray-400 font-bold text">Uptime: {data?.logs[data.logs?.length - 1].uptime}</p>
+                  <p className="text-sm text-gray-400 font-bold text">Uptime: {data?.logs[data.logs?.length - 1]?.uptime}</p>
                 </div>
                 <div className="pr-5">
-                  <div className={`w-9 h-9 ${data?.logs?.[data.logs?.length - 1]?.status === 'UP' || data?.logs?.length === 0 ? 'bg-green-400' : 'bg-red-400'} rounded-full flex justify-center items-center animate-pulse`}>
+                  <div className={`w-9 h-9 ${data?.logs?.[data.logs?.length - 1]?.status === 'UP' || data?.logs?.length === 0 ? 'bg-green-400 animate-pulse-green' : 'bg-red-400 animate-pulse-red'} rounded-full flex justify-center items-center`}>
                     {data?.logs?.[data.logs?.length - 1]?.status === 'UP' || data?.logs?.length === 0 ? 
                       <div className="w-0 h-0 border-l-5 border-r-5 border-b-8 border-transparent border-b-white"></div>
                       : <div className="w-0 h-0 border-l-5 border-r-5 border-t-8 border-transparent border-t-white"></div>
@@ -160,10 +300,10 @@ export default function Page({ params }) {
             }
 
             {/* Part 3: Graph,  */}
-            <SummaryChart type={data?.type}/>
+            <SummaryChart type={data?.type} uuid={data?.uuidMonitors}/>
 
             {/* Part 4: Insident Table */}
-            <IncidentsTableDetail data = {data}/>
+            <IncidentsTableDetail uuid={data?.uuidMonitors} type={data?.type}/>
           </div>
         </section>
       </div>
@@ -171,8 +311,9 @@ export default function Page({ params }) {
 }
 
 async function getData(id) {
-  const res = await fetch(`http://127.0.0.1:5000/api/get_monitor_with_logs/`);
+  const res = await api.get("/get_monitor_with_logs/");
   
-  const items = await res.json();
+  const items = res.data;
   return items.find(item => item.uuidMonitors === id);
 }
+

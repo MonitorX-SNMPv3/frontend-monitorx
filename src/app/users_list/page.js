@@ -1,15 +1,34 @@
 'use client'
 
-import NavigationSidebar from "@/component/sidebar";
+import api from "@/utils/api";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import TableUsers from "./table";
 
 export default function UserList() {
   const pathname = usePathname();
+  const router = useRouter();
+  
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        // Panggil endpoint /me untuk verifikasi user
+        const response = await api.get('/me');
+        setUser(response.data.user);
+      } catch (error) {
+        console.log(error);
+        router.push('/login');
+      }
+    };
+
+    checkUser();
+  }, [router]);
 
   return(
-    <div className="min-h-[100vh] flex bg-gradient-to-br from-[#070F2B] to-[#1B1A55] p-[21px]">
-      <NavigationSidebar path={pathname}/>
+    <div className="min-h-[100vh] w-full flex p-[21px]">
       <section className="w-full flex justify-center">
         <div className="w-[1200px] h-full px-[20px] text-white">
 
@@ -32,6 +51,10 @@ export default function UserList() {
 
           <div className="border-1 px-5 py-2 rounded-sm mb-2 border-[#535C91]">
             <h1 className="text-[24px] font-bold">Users List Page</h1>
+          </div>
+
+          <div>
+            <TableUsers/>
           </div>
         </div>
       </section>

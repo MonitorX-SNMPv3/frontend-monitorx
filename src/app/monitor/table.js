@@ -3,16 +3,22 @@ import { useEffect, useRef, useState } from "react";
 import { UptimeBar } from "../../component/uptimebar";
 import axios from "axios";
 import Link from "next/link";
+import { toast } from "react-toastify";
+import api from "@/utils/api";
+import { useRouter } from "next/navigation";
+import { getLatestPing, handleSelectedClear, handleSelectedDelete, handleSelectedPause, handleSelectedStart, handleSelectedTrigger } from "@/services/monitorServices";
 
-export default function TableSection() {
+export default function TableSection({ onRefresh }) {
   const [ selectedMonitors, setSelectedMonitors ] = useState([]);
   const [ filteredData, setFilteredData] = useState([]);
   const [ data, setData ] = useState([]); 
   const [ selectAll, setSelectAll ] = useState(false);
   const [ searchQuery, setSearchQuery ] = useState("");
   const [ actionPop, setActionPop ] = useState(false);
+  const [ sortPop, setSortPop ] = useState(false);
   const [ loading, setLoading ] = useState(true);
 
+  const router = useRouter();
   const dropdownRef = useRef(null);
 
   const getData = async () => {
@@ -28,7 +34,6 @@ export default function TableSection() {
     }
   };
 
-
   // Handle individual checkbox change
   const handleCheckboxChange = (uuid) => {
     setSelectedMonitors((prev) =>
@@ -36,8 +41,6 @@ export default function TableSection() {
         ? prev.filter((id) => id !== uuid) // Uncheck
         : [...prev, uuid] // Check
     );
-    console.log(selectedMonitors);
-    
   };
 
   // Handle "Select All" checkbox
@@ -55,57 +58,116 @@ export default function TableSection() {
     setSearchQuery(event.target.value);
   };
 
-  // Filter data based on searchQuery (case-insensitive)
-  // const filteredData = data.filter((item) =>
-  //   item.hostname.toLowerCase().includes(searchQuery.toLowerCase()) ||
-  //   item.ipaddress.toLowerCase().includes(searchQuery.toLowerCase()) ||
-  //   item.status.toLowerCase().includes(searchQuery.toLowerCase())
-  // );
+  const onTriggerClick = () => {
+    handleSelectedTrigger(
+      selectedMonitors,
+      data,
+      getData,
+      setSelectedMonitors,
+      setActionPop,
+      onRefresh,
+    );
+  };
+  
+  const onStartClick = () => {
+    handleSelectedStart(
+      selectedMonitors,
+      data,
+      getData,
+      setSelectedMonitors,
+      setActionPop,
+      onRefresh,
+    );
+  };
+  
+  const onPauseClick = () => {
+    handleSelectedPause(
+      selectedMonitors,
+      data,
+      getData,
+      setSelectedMonitors,
+      setActionPop,
+      onRefresh,
+    );
+  };
+  
+  const onClearClick = () => {
+    handleSelectedClear(
+      selectedMonitors,
+      data,
+      getData,
+      setSelectedMonitors,
+      setActionPop,
+      onRefresh,
+    );
+  };
 
-  const handleSelectedTrigger = () => {
-    console.log(`Trigger: ${selectedMonitors} ${JSON.stringify(filteredData)}`);
-  }
-  const handleSelectedStart = () => {
-    console.log(`Start: ${selectedMonitors}`);
-  }
-  const handleSelectedPause = () => {
-    console.log(`Pause: ${selectedMonitors}`);
-  }
-  const handleSelectedReset = () => {
-    console.log(`Reset: ${selectedMonitors}`);
-  }
-  const handleSelectedDelete = () => {
-    console.log(`Delete: ${selectedMonitors}`);
-  }
+  const onDeleteClick = () => {
+    handleSelectedDelete(
+      selectedMonitors,
+      data,
+      getData,
+      setSelectedMonitors,
+      setActionPop,
+      onRefresh,
+    );
+  };
+
+
+  const handleSortHostnameASC = () => {
+    const sorted = [...filteredData].sort((a, b) => {
+      return (a.hostname || "")
+        .toLowerCase()
+        .localeCompare((b.hostname || "").toLowerCase());
+    });
+    setFilteredData(sorted);
+  };
+
+  const handleSortHostnameDESC = () => {
+    const sorted = [...filteredData].sort((a, b) => {
+      return (b.hostname || "")
+        .toLowerCase()
+        .localeCompare((a.hostname || "").toLowerCase());
+    });
+    setFilteredData(sorted);
+  };
+
+  const handleSortPingLowest = () => {
+    const sorted = [...filteredData].sort((a, b) => {
+      return getLatestPing(a) - getLatestPing(b);
+    });
+    setFilteredData(sorted);
+  };
+
+  const handleSortPingHighest = () => {
+    const sorted = [...filteredData].sort((a, b) => {
+      return getLatestPing(b) - getLatestPing(a);
+    });
+    setFilteredData(sorted);
+  };
+
 
   useEffect(() => {
     if (data.length > 0) {
-      setFilteredData(data.filter((item) =>
-        item.hostname.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.ipaddress.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.status.toLowerCase().includes(searchQuery.toLowerCase())
-      ));
+      setFilteredData(
+        data.filter((item) =>
+          (item.hostname?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+          (item.ipaddress?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+          (item.status?.toLowerCase() || "").includes(searchQuery.toLowerCase())
+        )
+      );
     }
-    
   }, [data, searchQuery]);
+  
 
   useEffect(()=> {
     getData();
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setActionPop(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    }
   }, []);
 
 
 
   return (
-    <main className="flex flex-col">
+    <main className="flex flex-col relative">
       <div className="-m-1.5 overflow-x-auto">
         <div className="p-1.5 min-w-full inline-block align-middle">
           <div className="rounded-lg divide-gray-200">
@@ -128,38 +190,109 @@ export default function TableSection() {
                   </div>
                   <div className="text-xs font-medium">{selectedMonitors.length} / {data.length}</div>
                 </div>
-                <button ref={dropdownRef} onClick={() => setActionPop(!actionPop)} className="relative flex px-3 py-1 items-center gap-2 rounded-sm bg-[#535C91] cursor-pointer">
-                  <div className="text-sm font-medium">Action</div>
-                  <div className="w-0 h-0 border-l-4 border-r-4 border-t-6 border-transparent border-t-white"></div>
+
+                {/* Action Button */}
+                <div className="relative inline-block">
+                  {/* Toggle Button */}
+                  <button
+                    onClick={() => {setActionPop(!actionPop); setSortPop(false)}}
+                    className="flex px-3 py-1 items-center gap-2 rounded-sm bg-[#535C91] cursor-pointer"
+                  >
+                    <span className="text-sm font-medium">Action</span>
+                    <span className="w-0 h-0 border-l-4 border-r-4 border-t-6 border-transparent border-t-white"></span>
+                  </button>
+
+                  {/* Dropdown Menu */}
                   {actionPop && (
-                    <div className="absolute top-8 text-sm w-[145px] bg-[#535C91] -translate-x-3 text-start flex flex-col rounded-sm divide-y divide-gray-400">
-                      <a onClick={handleSelectedTrigger} className="font-medium px-3 py-1 rounded-t-sm hover:bg-white/20 flex items-center gap-3">
-                        <img src="/icon-radar2.svg" alt="" className="h-[15px]" />
-                        <p>Trigger Log</p>
-                      </a>
-                      <a onClick={handleSelectedStart} className="font-medium px-3 py-1 rounded-t-sm hover:bg-white/20 flex items-center gap-3">
-                        <img src="/icon-start.svg" alt="" className="h-[15px]" />
-                        <p>Start</p>
-                      </a>
-                      <a onClick={handleSelectedPause} className="font-medium px-3 py-1 hover:bg-white/20 flex items-center gap-3">
-                        <img src="/icon-paused.svg" alt="" className="h-[15px] ml-[2px]" />
-                        <p>Pause</p>
-                      </a>
-                      <a onClick={handleSelectedReset} className="font-medium px-3 py-1 hover:bg-white/20 flex items-center gap-3">
-                        <img src="/icon-reset.svg" alt="" className="h-[15px]" />
-                        <p>Reset Logs</p>
-                      </a>
-                      <a onClick={handleSelectedDelete} className="font-medium bg-red-400 px-3 py-1 rounded-b-sm hover:bg-white/20 flex items-center gap-3">
-                        <img src="/icon-trash.svg" alt="" className="h-[15px] mb-[2px]" />
-                        <p>Delete</p>
-                      </a>
+                    <div className="absolute top-full mt-2 text-sm w-[145px] bg-[#535C91] text-start flex flex-col rounded-sm divide-y divide-gray-400">
+                      <button
+                        onClick={onTriggerClick}
+                        className="font-medium px-3 py-1 rounded-t-sm hover:bg-white/20 flex items-center gap-3"
+                      >
+                        <img src="/icon-radar2.svg" alt="Trigger Log" className="h-[15px]" />
+                        <span>Trigger Log</span>
+                      </button>
+                      <button
+                        onClick={onStartClick}
+                        className="font-medium px-3 py-1 hover:bg-white/20 flex items-center gap-3"
+                      >
+                        <img src="/icon-start.svg" alt="Start" className="h-[15px]" />
+                        <span>Start</span>
+                      </button>
+                      <button
+                        onClick={onPauseClick}
+                        className="font-medium px-3 py-1 hover:bg-white/20 flex items-center gap-3"
+                      >
+                        <img src="/icon-paused.svg" alt="Pause" className="h-[15px] ml-[2px]" />
+                        <span>Pause</span>
+                      </button> 
+                      <button
+                        onClick={onClearClick}
+                        className="font-medium px-3 py-1 hover:bg-white/20 flex items-center gap-3"
+                      >
+                        <img src="/icon-reset.svg" alt="Reset Logs" className="h-[15px]" />
+                        <span>Clear Logs</span>
+                      </button>
+                      <button
+                        onClick={onDeleteClick}
+                        className="font-medium bg-red-400 px-3 py-1 rounded-b-sm hover:bg-white/20 flex items-center gap-3"
+                      >
+                        <img src="/icon-trash.svg" alt="Delete" className="h-[15px] mb-[2px]" />
+                        <span>Delete</span>
+                      </button>
                     </div>
                   )}
-                </button>
-                <button className="flex relative px-3 py-1 items-center gap-2 rounded-sm bg-[#535C91] cursor-pointer">
-                  <div className="text-sm font-medium">Type</div>
-                  <div className="w-0 h-0 border-l-4 border-r-4 border-t-6 border-transparent border-t-white"></div>
-                </button>
+                </div>
+
+                {/* Sort Button */}
+                <div className="relative inline-block">
+                  {/* Toggle Button */}
+                  <button
+                    onClick={() => {
+                      setSortPop(!sortPop);
+                      setActionPop(false);
+                    }}
+                    className="flex px-3 py-1 items-center gap-2 rounded-sm bg-[#535C91] cursor-pointer"
+                  >
+                    <span className="text-sm font-medium">Sort</span>
+                    <span className="w-0 h-0 border-l-4 border-r-4 border-t-6 border-transparent border-t-white"></span>
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  {sortPop && (
+                    <div className="absolute top-full mt-2 text-sm w-[175px] bg-[#535C91] text-start flex flex-col rounded-sm divide-y divide-gray-400">
+                      <button
+                        onClick={handleSortHostnameASC}
+                        className="font-medium px-3 py-1 rounded-t-sm hover:bg-white/20 flex items-center gap-3"
+                      >
+                        <img src="/icon-radar2.svg" alt="Hostname (A - Z)" className="h-[15px]" />
+                        <span>Hostname (A - Z)</span>
+                      </button>
+                      <button
+                        onClick={handleSortHostnameDESC}
+                        className="font-medium px-3 py-1 hover:bg-white/20 flex items-center gap-3"
+                      >
+                        <img src="/icon-radar2.svg" alt="Hostname (Z - A)" className="h-[15px]" />
+                        <span>Hostname (Z - A)</span>
+                      </button>
+                      <button
+                        onClick={handleSortPingLowest}
+                        className="font-medium px-3 py-1 hover:bg-white/20 flex items-center gap-3"
+                      >
+                        <img src="/icon-radar2.svg" alt="Ping (Lowest)" className="h-[15px]" />
+                        <span>Ping (Lowest)</span>
+                      </button>
+                      <button
+                        onClick={handleSortPingHighest}
+                        className="font-medium px-3 py-1 rounded-b-sm hover:bg-white/20 flex items-center gap-3"
+                      >
+                        <img src="/icon-radar2.svg" alt="Ping (Highest)" className="h-[15px]" />
+                        <span>Ping (Highest)</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+
               </div>
               {/* Search bar & Filter Button */}
               <div className="flex gap-1">
@@ -243,18 +376,32 @@ export default function TableSection() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-white text-center">{item.hostname}</td>
 
                         {/* Status Column */}
-                        
                         <td className="px-6 py-4 whitespace-nowrap font-medium text-white place-items-center">
-                          <div className="flex items-center gap-2">
-                            <div className={`w-6 h-6 ${item.logs[item.logs?.length - 1]?.status === 'UP' || item.logs.length === 0 ? 'bg-green-400' : 'bg-red-400'} rounded-full flex justify-center items-center animate-pulse`}>
-                              {item.logs[item.logs?.length - 1]?.status === 'UP' || item.logs.length === 0 ? 
+                          <div className={`flex items-center gap-2 ${item.running === "PAUSED" ? 'pl-3' : ''}`}>
+                            <div className={
+                              `${item.running === 'PAUSED' 
+                                  ? 'bg-gray-400 animate-pulse-gray' 
+                                  : item.logs[item.logs?.length - 1]?.status === 'UP' || item.logs.length === 0 
+                                    ? 'bg-green-400 animate-pulse-green' 
+                                    : 'bg-red-400 animate-pulse-red'
+                              } w-6 h-6 rounded-full flex justify-center items-center`
+                            }>
+                              {item.running === 'PAUSED' ? (
+                                <div className="w-2 h-2 bg-white mx-[1px] rounded-sm flex gap-1">
+                                  <div className="w-[2px] h-full bg-white" />
+                                  <div className="w-[2px] h-full bg-white" />
+                                </div>
+                              ) : item.logs[item.logs?.length - 1]?.status === 'UP' || item.logs.length === 0 ? (
                                 <div className="w-0 h-0 border-l-4 border-r-4 border-b-6 border-transparent border-b-white"></div>
-                                : <div className="w-0 h-0 border-l-4 border-r-4 border-t-6 border-transparent border-t-white"></div>
-                              }
+                              ) : (
+                                <div className="w-0 h-0 border-l-4 border-r-4 border-t-6 border-transparent border-t-white"></div>
+                              )}
                             </div>
                             <div className="flex flex-col">
-                              <p className="text-sm">{item.logs[item.logs?.length - 1]?.status}</p>
-                              <p className="text-xs text-gray-400">Ping: {item.logs[item.logs?.length - 1]?.responseTime ? `${item.logs[item.logs?.length - 1].responseTime}ms`  : `0ms`}</p>
+                              <p className="text-sm">{item.running === "PAUSED" ? 'PAUSED' : item.logs[item.logs?.length - 1]?.status }</p>
+                              <p className="text-xs text-gray-400">
+                                {item.running === "PAUSED" ? 'Last Ping' : 'Ping'}: {item.logs[item.logs?.length - 1]?.responseTime ? `${item.logs[item.logs?.length - 1].responseTime}ms`  : `N/A`}
+                              </p>
                             </div>
                           </div>
                         </td>
