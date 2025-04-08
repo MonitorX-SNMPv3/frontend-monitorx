@@ -12,6 +12,7 @@ export default function IncidentsPage() {
 
   const [user, setUser] = useState(null);
   const [ incidentsTotal, setIncidentsTotal ] = useState([]);
+  const [ mttrCount, setMttrCount ] = useState([]);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -41,7 +42,23 @@ export default function IncidentsPage() {
       }
     }
     GetIncidentsCount();
-  }, [])
+  }, []);
+
+  useEffect(() => {
+    const GetMTTRCount = async () => {
+      try {
+        const response = await api.get('/calculate_mttr_summary');
+        setMttrCount(response.data);
+      } catch (error) {
+        if (error.response) {
+          toast.error(error.response.data.msg);
+        } else {
+          toast.error("An Uncaught Error!");
+        }
+      }
+    }
+    GetMTTRCount();
+  }, []);
 
   return(
     <div className="min-h-[100vh] flex p-[21px]">
@@ -102,11 +119,11 @@ export default function IncidentsPage() {
               </div>
               <div className="flex gap-10">
                 <div className="flex items-baseline">
-                  <p className="text-[28px] font-bold text-green-400">02:10</p>
+                  <p className="text-[28px] font-bold text-green-400">{mttrCount ? mttrCount.mttr24 : 'HH:MM'}</p>
                   <p className="ml-1 text-[12px] font-normal italic">1days</p>
                 </div>
                 <div className="flex items-baseline">
-                  <p className="text-[28px] font-bold text-green-400">33:10</p>
+                  <p className="text-[28px] font-bold text-green-400">{mttrCount ? mttrCount.mttr128 : 'HH:MM'}</p>
                   <p className="ml-1 text-[12px] font-normal italic">7days</p>
                 </div>
               </div>
