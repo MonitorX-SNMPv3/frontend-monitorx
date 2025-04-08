@@ -44,7 +44,7 @@ export const SendAddData = async (attribute) => {
       "snmp_port": attribute.ports,
     };
     
-    let response = await api.post('http://127.0.0.1:5000/api/add_monitor_server/', result);
+    let response = await api.post('http://127.0.0.1:5000/api/add_monitor_devices/', result);
     toast.success(response.data.msg);
     
     return true;
@@ -58,6 +58,61 @@ export const SendAddData = async (attribute) => {
   }
   
   // return alert
+}
+export const SendEditData = async (attribute) => {
+  let result = {};
+  
+  try {
+    if ( attribute.selectedMonitor === "https" ) {
+      result = {
+        "uuid": attribute.uuidMonitors,
+        "hostname": attribute.hostname,
+        "ipaddress": attribute.ipaddress,
+        "statusCheck": attribute.selectedTime,
+      }
+      let response = await api.patch('/edit_monitor_https', result);
+      toast.success(response.data.msg);
+      return true;
+    }
+    
+    if ( attribute.selectedMonitor === "ports" ){
+      result = {
+        "uuid": attribute.uuidMonitors,
+        "hostname": attribute.hostname,
+        "ipaddress": attribute.ipaddress,
+        "port": attribute.ports,
+        "protocol": attribute.protocol,
+        "statusCheck": attribute.selectedTime,
+      }
+      let response = await api.post('/add_monitor_port', result);
+      toast.success(response.data.msg);
+      return true;
+    }
+    
+    result = {
+      "uuidDevices": attribute.uuidMonitors,
+      "hostname": attribute.hostname,
+      "ipaddress": attribute.ipaddress,
+      "statusCheck": attribute.selectedTime,
+      "snmp_username": attribute.username,
+      "snmp_authkey": attribute.authkey,
+      "snmp_privkey": attribute.privkey,
+      "snmp_port": attribute.ports,
+    };
+    
+    let response = await api.post('/add_monitor_devices', result);
+    toast.success(response.data.msg);
+    
+    return true;
+
+  } catch (error) {
+    if (error.response) {
+      toast.error(error.response.data.msg || "Something went wrong!");
+    } else {
+      toast.error("Network error or server not responding.");
+    }
+    return;
+  }  
 }
 
 export const getLatestPing = (item) => {
@@ -92,7 +147,6 @@ export const handleSelectedTrigger = async (
   }
   
   try {
-
     for (const uuid of selectedMonitors) {
       const selectedData = data.find((item) => item.uuidMonitors === uuid);
       if (!selectedData) continue; // Skip if not found
@@ -103,9 +157,9 @@ export const handleSelectedTrigger = async (
       if (selectedData.type === "https") {
         endpoint = "/add_logs_http";
         payload = { uuidHTTPs: selectedData.uuidMonitors };
-      } else if (selectedData.type === "server") {
-        endpoint = "/add_logs_server";
-        payload = { uuidServers: selectedData.uuidMonitors };
+      } else if (selectedData.type === "devices") {
+        endpoint = "/add_logs_devices";
+        payload = { uuidDevices: selectedData.uuidMonitors };
       } else if (selectedData.type === "port") {
         endpoint = "/add_logs_port";
         payload = { uuidPort: selectedData.uuidMonitors };

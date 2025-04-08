@@ -8,12 +8,10 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function AddMonitor() {
-  const pathname = usePathname();
   const router = useRouter();
   const [ uuidUsers, setUuidUsers ] = useState(null);
 
   const [ selectedMonitor, setSelectedMonitor ] = useState("HTTP");
-  const [ netsType, setNetsType ] = useState("ROUTER");
   const [ protocol, setProtocol ] = useState("TCP");
   const [ checkTime, setCheckTime ] = useState(3); 
   const [ hostname, setHostname ] = useState(null);
@@ -52,8 +50,8 @@ export default function AddMonitor() {
       detail: "Use Port Monitoring to track the availability and response of specific ports on servers.",
     },
     {
-      name: "Server",
-      detail: "Use Server Monitoring to track performance metrics of AWS EC2 instances, Linux servers, and more using SNMPv3.",
+      name: "Devices",
+      detail: "Use Device Monitoring to track performance metrics of AWS EC2 instances, Linux devices, and more using SNMPv3.",
     },
   ];
   
@@ -154,148 +152,62 @@ export default function AddMonitor() {
             </div>
           </div>
 
-          <div className="bg-[#1B1A55] rounded-sm px-10 py-5 flex justify-evenly mb-2 ">
-            {/* Notify Method */}
-            <div className="flex flex-col">
-              <div className="w-full">
-                <h1 className="font-bold mb-2">Notify Method</h1>
-              </div>
-
-              <div className="flex gap-8">
-                {/* Email & Telegram Notify */}
-                <div className="flex flex-col">
-                  <div className="flex text-xs mb-4">
-                    <label className="relative flex items-center cursor-pointer">
-                      <input type="checkbox" className="peer hidden" checked={emailChecked} onChange={() => setEmailChecked(!emailChecked)}/>
-                      <div className="w-4 h-4 border-2 border-[#9290C3] rounded-sm flex items-center justify-center peer-checked:bg-[#9290C3] peer-checked:border-[#9290C3]">
-                        {emailChecked && (
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
-                        )}
-                      </div>
-                    </label>
-                    <div className="flex flex-col pl-2">
-                      <p className="font-semibold">Email</p>
-                      <p className="font-bold text-gray-400">test.email@mail.com</p>
-                    </div>
-                  </div>
-                  <div className="flex text-xs mb-4">
-                    <label className="relative flex items-center cursor-not-allowed">
-                      <input type="checkbox" className="peer hidden" disabled/>
-                      <div className="w-4 h-4 border-2 border-gray-600 opacity-70 rounded-sm flex items-center justify-center bg-gray-600">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <line x1="5" y1="12" x2="19" y2="12" />
-                        </svg>
-                      </div>
-                    </label>
-                    <div className="flex flex-col pl-2">
-                      <p className="font-semibold">Telegram</p>
-                      <p className="font-bold text-gray-400">+628XX-XXXX-XXXX</p>
-                    </div>
-                  </div>
+          <div className="bg-[#1B1A55] rounded-sm px-10 py-5 flex flex-col mb-2">
+            <h1 className="font-bold mb-2">Monitors Details</h1>
+            <div className="flex gap-5">
+              <div className="flex flex-col w-full">
+                <div>
+                  <p className="text-xs font-medium">Hostname</p>
+                  <input id="hostname" type="text" placeholder="Hostname" onChange={(e) => setHostname(e.target.value)} required className="bg-white text-[13px] text-black py-1 px-5 rounded-sm outline-none mb-4 w-full"/>
                 </div>
-
-                {/* Whatsapp & SMS */}
-                <div className="flex flex-col">
-                  <div className="flex text-xs mb-4">
-                    <label className="relative flex items-center cursor-not-allowed">
-                      <input type="checkbox" className="peer hidden" disabled/>
-                      <div className="w-4 h-4 border-2 border-gray-600 opacity-70 rounded-sm flex items-center justify-center bg-gray-600">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <line x1="5" y1="12" x2="19" y2="12" />
-                        </svg>
-                      </div>
-                    </label>
-                    <div className="flex flex-col pl-2">
-                      <p className="font-semibold">Whatsapp</p>
-                      <p className="font-bold text-gray-400">+628XX-XXXX-XXXX</p>
-                    </div>
-                  </div>
-                  <div className="flex text-xs mb-4">
-                    <label className="relative flex items-center cursor-not-allowed">
-                      <input type="checkbox" className="peer hidden" disabled/>
-                      <div className="w-4 h-4 border-2 border-gray-600 opacity-70 rounded-sm flex items-center justify-center bg-gray-600">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <line x1="5" y1="12" x2="19" y2="12" />
-                        </svg>
-                      </div>
-                    </label>
-                    <div className="flex flex-col pl-2">
-                      <p className="font-semibold">SMS/Phone</p>
-                      <p className="font-bold text-gray-400">+628XX-XXXX-XXXX</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Monitor Details */}
-            <div className="flex flex-col">
-              <div className="w-full">
-                <h1 className="font-bold mb-2">Monitor Details</h1>
-              </div>
-              
-              <div className="flex gap-5">
-                {/* Column 1 */}
-                <div className="flex flex-col w-[200px]">
-                  <div className="w-full">
-                    <p className="text-xs font-medium">Hostname</p>
-                    <input id="hostname" type="text" placeholder="Hostname" onChange={(e) => setHostname(e.target.value)} required className="bg-white text-[13px] text-black py-1 px-5 rounded-sm outline-none mb-4"/>
-                  </div>
-                  <div className="w-full">
-                    <p className="text-xs font-medium">IP Address</p>
-                    <input id="ipaddress" type="text" placeholder="IP Address" onChange={(e) => setIpaddress(e.target.value)} required className="bg-white text-[13px] text-black py-1 px-5 rounded-sm outline-none mb-4"/>
-                  </div>
-                </div>
-
-                {/* Column 2 */}
-                <div className="flex flex-col w-[200px]">
-
-                  {selectedMonitor === "Ports" && <div className="w-full">
-                    <p className="text-xs font-medium">Protocol</p>
-                    <select onChange={(e) => {setProtocol(e.target.value);}} className="bg-white text-black text-[13px] w-[188px] py-1 px-5 outline-none rounded-sm mb-4">
-                      <option value={`TCP`}>TCP</option>
-                      <option value={`UDP`}>UDP</option>
-                    </select>
-                  </div>}
-
-                  { selectedMonitor === "Ports" && <div className="">
-                    <p className="text-xs font-medium">Port</p>
-                    <input id="ports" type="text" placeholder="80" onChange={(e) => setPorts(e.target.value)} required className="bg-white text-[13px] text-black py-1 px-5 rounded-sm outline-none mb-4"/>
-                  </div> }
-
-                  { selectedMonitor === "Server" && <div className="">
-                    <p className="text-xs font-medium">SNMP Port</p>
-                    <input id="ports" type="text" placeholder="161" onChange={(e) => setPorts(e.target.value)} required className="bg-white text-[13px] text-black py-1 px-5 rounded-sm outline-none mb-4"/>
-                  </div> }
-
-                  { selectedMonitor === "Server" && <div className="">
-                    <p className="text-xs font-medium">SNMP Username</p>
-                    <input id="snmp_username" type="text" placeholder="Username" onChange={(e) => setUsername(e.target.value)} required className="bg-white text-[13px] text-black py-1 px-5 rounded-sm outline-none mb-4"/>
-                  </div> }
+                <div className={`${selectedMonitor !== "HTTP" ? '' : 'hidden'}`}>
+                  <p className="text-xs font-medium">IP Address</p>
+                  <input id="ipaddress" type="text" placeholder="IP Address" onChange={(e) => setIpaddress(e.target.value)} required className="bg-white text-[13px] text-black py-1 px-5 rounded-sm outline-none mb-4 w-full"/>
                 </div>
                 
-                {/* Column 3 */}
-                <div className="flex flex-col">
-                  { selectedMonitor === "Server" && <div className="">
-                    <p className="text-xs font-medium">SNMP Auth Key</p>
-                    <input id="snmp_auth" type="text" placeholder="Auth Key" onChange={(e) => setAuthKey(e.target.value)} required className="bg-white text-[13px] text-black py-1 px-5 rounded-sm outline-none mb-4"/>
-                  </div> }
-                  { selectedMonitor === "Server" && <div className="">
-                    <p className="text-xs font-medium">SNMP Priv Key</p>
-                    <input id="snmp_priv" type="text" placeholder="Priv Key" onChange={(e) => setPrivKey(e.target.value)} required className="bg-white text-[13px] text-black py-1 px-5 rounded-sm outline-none mb-4"/>
-                  </div> }
-                </div>
 
+                {selectedMonitor === "Devices" &&
+                  <div>
+                    <p className="text-xs font-medium">SNMP Username</p>
+                    <input id="username" type="text" placeholder="SNMP Username" onChange={(e) => setUsername(e.target.value)} required className="bg-white text-[13px] text-black py-1 px-5 rounded-sm outline-none mb-4 w-full"/>
+                  </div>
+                }
               </div>
+              <div className="flex flex-col w-full">
+                {selectedMonitor === "HTTP" && 
+                  <div>
+                    <p className="text-xs font-medium">IP Address</p>
+                    <input id="ipaddress" type="text" placeholder="IP Address" onChange={(e) => setIpaddress(e.target.value)} required className="bg-white text-[13px] text-black py-1 px-5 rounded-sm outline-none mb-4 w-full"/>
+                  </div> }
+                { selectedMonitor !== "HTTP" && <div>
+                  <p className="text-xs font-medium">Port</p>
+                  <input id="ports" type="text" placeholder="80 (SNMP Default Port is 161)" onChange={(e) => setPorts(e.target.value)} required className="w-full bg-white text-[13px] text-black py-1 px-5 rounded-sm outline-none mb-4"/>
+                </div> }
 
-              {/* Button Add */}
-              <div className={`w-full flex ${selectedMonitor !== 'HTTP' && 'justify-center'}`}>
-                <button className="bg-[#535C91] w-fit text-xs px-7 py-1 rounded-sm cursor-pointer" onClick={() => setModalOpen(!modalOpen)}>Add Monitor</button>              
+                {selectedMonitor === "Ports" && <div>
+                  <p className="text-xs font-medium">Protocol</p>
+                  <select onChange={(e) => {setProtocol(e.target.value);}} className="w-full bg-white text-black text-[13px] py-1 px-5 outline-none rounded-sm mb-4">
+                    <option value={`TCP`}>TCP</option>
+                    <option value={`UDP`}>UDP</option>
+                  </select>
+                </div>}
+
+                { selectedMonitor === "Devices" && <div>
+                  <p className="text-xs font-medium">SNMP Auth Key</p>
+                  <input id="snmp_auth" type="text" placeholder="Auth Key" onChange={(e) => setAuthKey(e.target.value)} required className="w-full bg-white text-[13px] text-black py-1 px-5 rounded-sm outline-none mb-4"/>
+                </div> }
+
+                { selectedMonitor === "Devices" && <div className="">
+                  <p className="text-xs font-medium">SNMP Priv Key</p>
+                  <input id="snmp_priv" type="text" placeholder="Priv Key" onChange={(e) => setPrivKey(e.target.value)} required className="w-full bg-white text-[13px] text-black py-1 px-5 rounded-sm outline-none mb-4"/>
+                </div> }
               </div>
             </div>
+            <div className={`flex w-full justify-center`}>
+              <button className="bg-[#535C91] w-[200px] text-sm px-7 py-2 rounded-sm cursor-pointer" onClick={() => setModalOpen(!modalOpen)}>Add Monitor</button>              
+            </div>
           </div>
+
         </div>
       </section>
 
@@ -344,17 +256,17 @@ export default function AddMonitor() {
                   <div>
                     <p className="text-xs font-semibold text-gray-400">
                       {selectedMonitor === 'Ports' && `Protocol`}
-                      {selectedMonitor === 'Server' && `Username`}
+                      {selectedMonitor === 'Devices' && `Username`}
                     </p>
                     <p className="text-white text-sm font-bold">
                       {selectedMonitor === 'Ports' ? protocol : username ? username : 'N/A'}
                     </p>
                   </div>
-                  <div className={`${selectedMonitor === "Server" ? '' : 'hidden'}`}>
+                  <div className={`${selectedMonitor === "Devices" ? '' : 'hidden'}`}>
                     <p className="text-xs font-semibold text-gray-400">Auth Key</p>
                     <p className="text-white text-sm font-bold">{authkey ? authkey : 'N/A'}</p>
                   </div>
-                  <div className={`${selectedMonitor === "Server" ? '' : 'hidden'}`}>
+                  <div className={`${selectedMonitor === "Devices" ? '' : 'hidden'}`}>
                     <p className="text-xs font-semibold text-gray-400">Priv Key</p>
                     <p className="text-white text-sm font-bold">{privkey ? privkey : 'N/A'}</p>
                   </div>
@@ -373,7 +285,7 @@ export default function AddMonitor() {
             {/* Open Modal Button */}
             <button 
               className="mt-4 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition w-full cursor-pointer"
-              onClick={() => {handleSaveButton({uuidUsers, selectedMonitor, checkTime, hostname, ipaddress, ports, netsType, protocol, username, authkey, privkey})}}
+              onClick={() => {handleSaveButton({uuidUsers, selectedMonitor, checkTime, hostname, ipaddress, ports, protocol, username, authkey, privkey})}}
             >
               { loading ? 
               <div className="animate-spin inline-block size-3 border-3 border-current border-t-transparent text-gray-800 rounded-full dark:text-white" role="status" aria-label="loading">

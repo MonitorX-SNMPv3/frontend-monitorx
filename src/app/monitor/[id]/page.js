@@ -14,8 +14,10 @@ import { toast } from "react-toastify";
 export default function Page({ params }) {
   const [ data, setData ] = useState(null);
   const [ length, setLength ] = useState(0);
-  const [user, setUser] = useState(null);
+  const [ user, setUser ] = useState(null);
   const [ loading, setLoading ] = useState(false);
+  const [ modalOpen, setModalOpen ] = useState(false);
+
   const pathname = usePathname();
   const router = useRouter();
 
@@ -107,8 +109,8 @@ export default function Page({ params }) {
         uuid: data.uuidMonitors
       };
       
-      if (data?.type === "server"){
-        res = await api.post('/monitor_server_pdf', attribute);
+      if (data?.type === "devices"){
+        res = await api.post('/monitor_devices_pdf', attribute);
       }
       
     } catch (error) {
@@ -143,6 +145,29 @@ export default function Page({ params }) {
         setLoading(false);
       }
     }
+  }
+
+  const handleTriggerButton = async () => {
+    const toastprop = toast.loading("Loading...");
+
+    try {
+      const attribute = {
+        uuid: data.uuidMonitors
+      };
+
+      if ( data?.type === "devices" ) {
+
+      }
+
+    } catch (error) {
+      if (error.response) {
+        toast.error(error.response.data.msg || "Something went wrong!");
+      } else {
+        toast.error("Network error or server not responding.");
+        console.log('Pause', error);
+        
+      }
+    } 
   }
 
   return(
@@ -188,18 +213,18 @@ export default function Page({ params }) {
               <div className="flex items-center gap-2">
                 <div className="relative group">
                   <button className="rounded-full h-8 w-8 cursor-pointer bg-[#9290C3] flex items-center justify-center">
-                    <img src="/icon-plus.svg" alt="" className="h-5"/>
+                    <img src="/icon-plus.svg" alt="" className="h-5" />
                   </button>
-                  <span className="w-[120px] text-center absolute -top-6 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    Add logs manually
+                  <span className="w-[140px] text-center absolute -top-6 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                    Trigger Logs Manually
                   </span>
                 </div>
                 <div className="flex flex-col gap-1">
                   <div className="flex gap-1">
-                    <button className="bg-blue-400 cursor-pointer h-fit text-xs px-5 py-1.5 rounded-sm flex justify-center place-items-center gap-1 hover:bg-white/10">
+                    <Link href={`/monitor/edit_monitor/${data?.uuidMonitors}`} className="bg-blue-400 cursor-pointer h-fit text-xs px-5 py-1.5 rounded-sm flex justify-center place-items-center gap-1 hover:bg-white/10">
                       <div>Edit</div>
                       <img src="/icon-edit.svg" alt="" className="h-[10px] mt-0.5"/>
-                    </button>
+                    </Link>
                     <button 
                       onClick={handleButtonExport}
                       className="bg-[#1B1ABB] cursor-pointer h-fit text-xs px-4  py-1.5 rounded-sm flex justify-center place-items-center gap-1 hover:bg-white/10"
@@ -274,7 +299,7 @@ export default function Page({ params }) {
             </div>
 
             {/* Part 2: SLA, Last 7 Days, Last 30 Days, Last 365 Days,  */}
-            { data?.type === "server" && 
+            { data?.type === "devices" && 
               <div className="flex w-full bg-[#535C91] divide-x first:divide-none divide-gray-500 justify-around px-10 py-5 rounded-sm mb-2">
                 <div className="flex flex-col w-[200px] justify-center">
                   <p className="text-xs">Response Time</p>

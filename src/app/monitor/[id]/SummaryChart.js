@@ -10,7 +10,7 @@ const GetData = async (type, uuid) => {
   let send = { uuidMonitors: uuid, type: type };
   const response = await api.post('/calculate_24h_summary', send);
   const data = response.data;
-  if (type === "server") {
+  if (type === "devices") {
     return data.map(item => ({
       cpuUsage: parseFloat(item.AvgCpu.replace('%', '')) || 0,
       ramUsage: parseFloat(item.AvgRam.replace('%', '')) || 0,
@@ -96,7 +96,7 @@ const UsageChart = ({ type, uuid }) => {
             ? "CPU, RAM, and Disk Usage Trend (24 Hours)"
             : "Response Time Trend (24 Hours)"}
         </h2>
-        {type === "server" && (
+        {type === "devices" && (
           <button
             onClick={() =>
               setSelectedChart(selectedChart === "usage" ? "responseTime" : "usage")

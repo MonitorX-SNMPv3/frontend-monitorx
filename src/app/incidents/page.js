@@ -11,6 +11,7 @@ export default function IncidentsPage() {
   const router = useRouter();
 
   const [user, setUser] = useState(null);
+  const [ incidentsTotal, setIncidentsTotal ] = useState([]);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -25,6 +26,22 @@ export default function IncidentsPage() {
 
     checkUser();
   }, [router]);
+
+  useEffect(() => {
+    const GetIncidentsCount = async () => {
+      try {
+        const response = await api.get('/get_incidents_count');
+        setIncidentsTotal(response.data);
+      } catch (error) {
+        if (error.response) {
+          toast.error(error.response.data.msg);
+        } else {
+          toast.error("An Uncaught Error!");
+        }
+      }
+    }
+    GetIncidentsCount();
+  }, [])
 
   return(
     <div className="min-h-[100vh] flex p-[21px]">
@@ -57,15 +74,15 @@ export default function IncidentsPage() {
               <p className="font-medium">Incidents Total</p>
               <div className="flex gap-10">
                 <div className="flex items-baseline">
-                  <p className="text-[28px] font-bold text-green-400">5</p>
+                  <p className="text-[28px] font-bold text-green-400">{incidentsTotal ? incidentsTotal.h24 : '0'}</p>
                   <p className="ml-1 text-[12px] font-normal italic">24hrs</p>
                 </div>
                 <div className="flex items-baseline">
-                  <p className="text-[28px] font-bold text-green-400">3</p>
+                  <p className="text-[28px] font-bold text-green-400">{incidentsTotal ? incidentsTotal.h128 : '0'}</p>
                   <p className="ml-1 text-[12px] font-normal italic">7days</p>
                 </div>
                 <div className="flex items-baseline">
-                  <p className="text-[28px] font-bold text-green-400">10</p>
+                  <p className="text-[28px] font-bold text-green-400">{incidentsTotal ? incidentsTotal.h720 : '0'}</p>
                   <p className="ml-1 text-[12px] font-normal italic">1mon</p>
                 </div>
               </div>

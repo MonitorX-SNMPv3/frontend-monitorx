@@ -43,7 +43,7 @@ export default function LoginPage() {
             Monitor<span className="text-[#B1D3E3]">X</span>
           </p>
           <p className="text-white font-quicksand text-xs tracking-widest">
-            Integrated SNMPv3 Server Monitor
+            Integrated SNMPv3 Device Monitor
           </p>
           <p className="text-white font-bold mt-[20px] text-xl">
             Sign in to your account

@@ -8,18 +8,20 @@ import api from "@/utils/api";
 import { useRouter } from "next/navigation";
 import { getLatestPing, handleSelectedClear, handleSelectedDelete, handleSelectedPause, handleSelectedStart, handleSelectedTrigger } from "@/services/monitorServices";
 
-export default function TableSection({ onRefresh }) {
+export default function TableSection({ onRefresh, type }) {
   const [ selectedMonitors, setSelectedMonitors ] = useState([]);
   const [ filteredData, setFilteredData] = useState([]);
   const [ data, setData ] = useState([]); 
   const [ selectAll, setSelectAll ] = useState(false);
   const [ searchQuery, setSearchQuery ] = useState("");
+  const [ loading, setLoading ] = useState(true);
+  
   const [ actionPop, setActionPop ] = useState(false);
   const [ sortPop, setSortPop ] = useState(false);
-  const [ loading, setLoading ] = useState(true);
+  const [ filterPop, setFilterPop ] = useState(false);
 
-  const router = useRouter();
-  const dropdownRef = useRef(null);
+  const [ filterStatus, setFilterStatus ] = useState("");
+  const [ filterType, setFilterType ] = useState("");
 
   const getData = async () => {
     try {
@@ -121,6 +123,7 @@ export default function TableSection({ onRefresh }) {
         .localeCompare((b.hostname || "").toLowerCase());
     });
     setFilteredData(sorted);
+    setSortPop(false);
   };
 
   const handleSortHostnameDESC = () => {
@@ -129,6 +132,7 @@ export default function TableSection({ onRefresh }) {
         .toLowerCase()
         .localeCompare((a.hostname || "").toLowerCase());
     });
+    setSortPop(false);
     setFilteredData(sorted);
   };
 
@@ -136,6 +140,7 @@ export default function TableSection({ onRefresh }) {
     const sorted = [...filteredData].sort((a, b) => {
       return getLatestPing(a) - getLatestPing(b);
     });
+    setSortPop(false);
     setFilteredData(sorted);
   };
 
@@ -143,28 +148,46 @@ export default function TableSection({ onRefresh }) {
     const sorted = [...filteredData].sort((a, b) => {
       return getLatestPing(b) - getLatestPing(a);
     });
+    setSortPop(false);
     setFilteredData(sorted);
   };
 
 
   useEffect(() => {
-    if (data.length > 0) {
-      setFilteredData(
-        data.filter((item) =>
-          (item.hostname?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-          (item.ipaddress?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-          (item.status?.toLowerCase() || "").includes(searchQuery.toLowerCase())
-        )
+    let filtered = data;
+  
+    if (searchQuery) {
+      filtered = filtered.filter((item) =>
+        (item.hostname?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+        (item.ipaddress?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+        (item.status?.toLowerCase() || "").includes(searchQuery.toLowerCase())
       );
     }
-  }, [data, searchQuery]);
-  
+    if (filterStatus) {
+      filtered = filtered.filter((item) => {
+        if (filterStatus.toLowerCase() === "paused") {
+          return item.running === "PAUSED";
+        } else {
+          // Untuk status UP atau DOWN, ambil status dari elemen terakhir pada item.logs
+          if (item.logs && item.logs.length > 0) {
+            const lastLogStatus = item.logs[item.logs.length - 1].status;
+            return lastLogStatus === filterStatus.toUpperCase();
+          }
+          return false;
+        }
+      });
+      setFilterPop(false);
+    }
+    if (filterType) {
+      filtered = filtered.filter((item) => item.type === filterType);
+      setFilterPop(false);
+    }
+    setFilteredData(filtered);
+  }, [data, searchQuery, filterStatus, filterType]);
 
   useEffect(()=> {
     getData();
   }, []);
-
-
 
   return (
     <main className="flex flex-col relative">
@@ -172,7 +195,7 @@ export default function TableSection({ onRefresh }) {
         <div className="p-1.5 min-w-full inline-block align-middle">
           <div className="rounded-lg divide-gray-200">
             {/* Action Bar */}
-            <section className="pt-5 flex items-center justify-between">
+            <section className={`pt-5 flex items-center justify-between`}>
               <div className="flex items-center gap-1">
                 {/* Selected Checkbox */}
                 <div className="px-3 py-1 flex items-center gap-2 bg-[#535C91] rounded-sm">
@@ -192,10 +215,10 @@ export default function TableSection({ onRefresh }) {
                 </div>
 
                 {/* Action Button */}
-                <div className="relative inline-block">
+                <div className={`${type ? type === "USER" ? 'hidden' : 'inline-block' : 'hidden'} relative `}>
                   {/* Toggle Button */}
                   <button
-                    onClick={() => {setActionPop(!actionPop); setSortPop(false)}}
+                    onClick={() => {setActionPop(!actionPop); setSortPop(false); setFilterPop(false)}}
                     className="flex px-3 py-1 items-center gap-2 rounded-sm bg-[#535C91] cursor-pointer"
                   >
                     <span className="text-sm font-medium">Action</span>
@@ -251,6 +274,7 @@ export default function TableSection({ onRefresh }) {
                     onClick={() => {
                       setSortPop(!sortPop);
                       setActionPop(false);
+                      setFilterPop(false);
                     }}
                     className="flex px-3 py-1 items-center gap-2 rounded-sm bg-[#535C91] cursor-pointer"
                   >
@@ -296,10 +320,53 @@ export default function TableSection({ onRefresh }) {
               </div>
               {/* Search bar & Filter Button */}
               <div className="flex gap-1">
-                <div className="flex px-3 py-1 items-center gap-2 rounded-sm bg-[#535C91]">
-                  <div className="text-sm font-medium">Filter</div>
-                  <div className="w-0 h-0 border-l-4 border-r-4 border-t-6 border-transparent border-t-white"></div>
+                <div className="relative inline-block">
+                  <button
+                    onClick={() => {
+                      setFilterPop(!filterPop);
+                      setActionPop(false);
+                      setSortPop(false);
+                    }}
+                    className="flex px-3 py-1.5 items-center gap-2 rounded-sm bg-[#535C91] cursor-pointer"
+                  >
+                    <span className="text-sm font-medium">Filter</span>
+                    <span className="w-0 h-0 border-l-4 border-r-4 border-t-6 border-transparent border-t-white"></span>
+                  </button>
+                  {filterPop && (
+                    <div className="absolute z-50 bg-[#535C91] translate-y-2 px-4 pt-1 pb-4 rounded mb-4">
+                      <div className="flex gap-4">
+                        <div>
+                          <label className="text-sm">Status</label>
+                          <select
+                            value={filterStatus}
+                            onChange={(e) => setFilterStatus(e.target.value)}
+                            className="bg-[#0D1B42] text-white px-2 py-1 rounded"
+                          >
+                            <option value="">All</option>
+                            <option value="UP">Up</option>
+                            <option value="DOWN">Down</option>
+                            <option value="PAUSED">Paused</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-sm">Type</label>
+                          <select
+                            value={filterType}
+                            onChange={(e) => setFilterType(e.target.value)}
+                            className="bg-[#0D1B42] text-white px-2 py-1 rounded"
+                          >
+                            <option value="">All</option>
+                            <option value="https">HTTPS</option>
+                            <option value="ports">Ports</option>
+                            <option value="devices">Devices</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
+                
+
                 <div className="relative max-w-xs">
                   <label htmlFor="hs-table-search" className="sr-only">Search</label>
                   <input
@@ -418,9 +485,6 @@ export default function TableSection({ onRefresh }) {
                             <img src="/icon-info.svg" alt="" className="h-[14px]"/>
                             <p>Detail</p>
                           </Link>
-                          <button className="bg-[#F65D60] p-1.5 rounded-sm ml-[3px] cursor-pointer">
-                            <img src="/icon-trash.svg" alt="" className="h-[15px]"/>
-                          </button>
                         </td>
                       </tr>
                     ))
