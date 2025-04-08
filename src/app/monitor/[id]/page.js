@@ -111,14 +111,17 @@ export default function Page({ params }) {
       
       if (data?.type === "devices"){
         res = await api.post('/monitor_devices_pdf', attribute);
+      } else if ( data?.type === "https" ) {
+        res = await api.post('/monitor_https_pdf', attribute);
+      } else if ( data?.type === "ports" ) {
+        res = await api.post('/monitor_ports_pdf', attribute);
       }
       
     } catch (error) {
       if (error.response) {
         toast.error(error.response.data.msg || error.message);
       } else {
-        toast.error("Network error or server not responding.");
-        console.log('Pause', error);
+        toast.error(error.message);
       }
     }
   }
@@ -149,22 +152,56 @@ export default function Page({ params }) {
 
   const handleTriggerButton = async () => {
     const toastprop = toast.loading("Loading...");
-
     try {
-      const attribute = {
-        uuid: data.uuidMonitors
-      };
-
       if ( data?.type === "devices" ) {
-
+        const attribute = {
+          uuidDevices: data.uuidMonitors
+        };
+        const res = await api.post('/add_logs_devices', attribute);
+        toast.update(toastprop, {
+          render: "Triggering Logs Devices Success.",
+          type: "success",
+          isLoading: false,
+          autoClose: 2500,
+        });
+      } else if ( data?.type === "ports" ){
+        const attribute = {
+          uuidPorts: data.uuidMonitors
+        };
+        const res = await api.post('/add_logs_ports', attribute);
+        toast.update(toastprop, {
+          render: "Triggering Logs Ports Success.",
+          type: "success",
+          isLoading: false,
+          autoClose: 2500,
+        });
+      } else if ( data?.type === "https" ){
+        const attribute = {
+          uuidHTTPs: data.uuidMonitors
+        };
+        const res = await api.post('/add_logs_http', attribute);
+        toast.update(toastprop, {
+          render: "Triggering Logs HTTPs Success.",
+          type: "success",
+          isLoading: false,
+          autoClose: 2500,
+        });
       }
-
     } catch (error) {
       if (error.response) {
-        toast.error(error.response.data.msg || "Something went wrong!");
+        toast.update(toastprop, {
+          render: error.response.data.msg || "Something went wrong!",
+          type: "error",
+          isLoading: false,
+          autoClose: 2500,
+        });
       } else {
-        toast.error("Network error or server not responding.");
-        console.log('Pause', error);
+        toast.update(toastprop, {
+          render: error.message,
+          type: "error",
+          isLoading: false,
+          autoClose: 2500,
+        });
         
       }
     } 
@@ -212,7 +249,7 @@ export default function Page({ params }) {
               </div>
               <div className="flex items-center gap-2">
                 <div className="relative group">
-                  <button className="rounded-full h-8 w-8 cursor-pointer bg-[#9290C3] flex items-center justify-center">
+                  <button onClick={() => handleTriggerButton()} className="rounded-full h-8 w-8 cursor-pointer bg-[#9290C3] flex items-center justify-center">
                     <img src="/icon-plus.svg" alt="" className="h-5" />
                   </button>
                   <span className="w-[140px] text-center absolute -top-6 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">

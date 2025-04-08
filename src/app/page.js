@@ -11,6 +11,7 @@ import TableDashboard from "./dashboard/tableDashboard";
 import Link from "next/link";
 import jwt from "jsonwebtoken";
 import api from "@/utils/api";
+import { toast } from "react-toastify";
 
 export default function Home() {
   const pathname = usePathname();
