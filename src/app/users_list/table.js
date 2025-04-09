@@ -406,7 +406,7 @@ export default function TableUsers() {
               </div>
             </div>
             <button className="w-full cursor-pointer" onClick={() => {handleButtonAdd({ username, type, password, confPassword, email })}}>
-              <span className="bg-[#535C91] px-16 py-2 text-sm rounded-sm">Save Edit</span>
+              <span className="bg-[#535C91] px-16 py-2 text-sm rounded-sm">Confirm Add</span>
             </button>
           </div>
         </div>

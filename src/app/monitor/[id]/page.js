@@ -27,7 +27,6 @@ export default function Page({ params }) {
   useEffect(() => {
     const checkUser = async () => {
       try {
-        // Panggil endpoint /me untuk verifikasi user
         const response = await api.get('/me');
         setUser(response.data.user);
       } catch (error) {
