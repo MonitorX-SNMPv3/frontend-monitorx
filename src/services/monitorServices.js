@@ -84,7 +84,7 @@ export const SendEditData = async (attribute) => {
         "protocol": attribute.protocol,
         "statusCheck": attribute.selectedTime,
       }
-      let response = await api.post('/edit_monitor_port', result);
+      let response = await api.patch('/edit_monitor_ports', result);
       toast.success(response.data.msg);
       return true;
     }
@@ -100,7 +100,7 @@ export const SendEditData = async (attribute) => {
       "snmp_port": attribute.ports,
     };
     
-    let response = await api.post('/edit_monitor_devices', result);
+    let response = await api.patch('/edit_monitor_devices', result);
     toast.success(response.data.msg);
     
     return true;
@@ -109,7 +109,7 @@ export const SendEditData = async (attribute) => {
     if (error.response) {
       toast.error(error.response.data.msg);
     } else {
-      toast.error("Network error or server not responding.");
+      toast.error(error.message);
     }
     return;
   }  
@@ -117,7 +117,6 @@ export const SendEditData = async (attribute) => {
 
 export const getLatestPing = (item) => {
   if (item.logs && item.logs.length > 0) {
-    // Assuming the last element is the latest log
     const latestLog = item.logs[item.logs.length - 1];
     return latestLog.responseTime || 0;
   }
