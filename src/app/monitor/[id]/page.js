@@ -67,7 +67,7 @@ export default function Page({ params }) {
 
     } catch (error) {
       if (error.response) {
-        toast.error(error.response.data.msg || "Something went wrong!");
+        toast.error(error.response.data.msg);
       } else {
         toast.error("Network error or server not responding.");
         console.log('Start', error);
@@ -94,7 +94,7 @@ export default function Page({ params }) {
 
     } catch (error) {
       if (error.response) {
-        toast.error(error.response.data.msg || "Something went wrong!");
+        toast.error(error.response.data.msg);
       } else {
         toast.error("Network error or server not responding.");
         console.log('Pause', error);
@@ -111,26 +111,32 @@ export default function Page({ params }) {
         uuid: data.uuidMonitors,
       };
   
-      let res;
+      let res = null;
   
-      if (data?.type === "devices") {
-        res = await api.post('/monitor_devices_pdf', attribute, { responseType: 'blob' });
-      } else if (data?.type === "https") {
-        res = await api.post('/monitor_https_pdf', attribute, { responseType: 'blob' });
-      } else if (data?.type === "ports") {
-        res = await api.post('/monitor_ports_pdf', attribute, { responseType: 'blob' });
+      switch (data?.type) {
+        case "devices":
+          res = await api.post('/monitor_devices_pdf', attribute, { responseType: 'blob' });
+          break;
+        case "https":
+          res = await api.post('/monitor_https_pdf', attribute, { responseType: 'blob' });
+          break;
+        case "ports":
+          res = await api.post('/monitor_ports_pdf', attribute, { responseType: 'blob' });
+          break;
+        default:
+          throw new Error("Unknown monitor type.");
       }
   
-      // Buat URL objek dari blob dan paksa browser untuk download
+      if (!res) throw new Error("No response from export endpoint.");
+  
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
       link.href = url;
   
-      // Ambil nama file dari header jika tersedia
       const contentDisposition = res.headers['content-disposition'];
       const filename = contentDisposition?.split('filename=')[1] || 'monitor-summary.pdf';
   
-      link.setAttribute('download', filename.replace(/['"]/g, '')); // remove quote if exists
+      link.setAttribute('download', filename.replace(/['"]/g, ''));
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -143,13 +149,14 @@ export default function Page({ params }) {
       });
     } catch (error) {
       toast.update(toastprop, {
-        render: error?.response?.data?.msg || "Failed to export summary.",
+        render: error?.response?.data?.msg || error.message || "Failed to export summary.",
         type: "error",
         isLoading: false,
         autoClose: 2500,
       });
     }
   };
+  
   
 
   const handdleButtonTestAlert = async () => {
@@ -216,7 +223,7 @@ export default function Page({ params }) {
     } catch (error) {
       if (error.response) {
         toast.update(toastprop, {
-          render: error.response.data.msg || "Something went wrong!",
+          render: error.response.data.msg ,
           type: "error",
           isLoading: false,
           autoClose: 2500,

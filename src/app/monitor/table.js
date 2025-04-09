@@ -435,7 +435,7 @@ export default function TableSection({ onRefresh, type }) {
                         <td className="px-6 whitespace-nowrap font-medium text-white">
                           <div className="flex flex-col">
                             <p className="text-sm">{item.ipaddress}</p>
-                            <p className="text-xs text-gray-400">Type: {item.type}</p>
+                            <p className="text-xs text-gray-400">Type: <span className="uppercase">{item.type}</span>{item.type === "ports" && <span>, Port: {item.port}</span>}</p>
                           </div>
                         </td>
 

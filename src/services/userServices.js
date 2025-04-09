@@ -15,7 +15,7 @@ export const SendEditUser = async (attribute) => {
         toast.success(response.data.msg);
     } catch (error) {
         if (error.response) {
-            toast.error(error.response.data.msg || "Something went wrong!");
+            toast.error(error.response.data.msg);
         } else {
             toast.error("Network error or server not responding.");
         }

@@ -49,7 +49,7 @@ export default function TableUsers() {
     } catch (error) {
       if (error.response) {
         toast.update(toastprop, {
-          render: error.response.data.msg || "Something went wrong!",
+          render: error.response.data.msg ,
           type: "error",
           isLoading: false,
           autoClose: 2500,

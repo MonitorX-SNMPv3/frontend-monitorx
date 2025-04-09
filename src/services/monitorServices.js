@@ -51,7 +51,7 @@ export const SendAddData = async (attribute) => {
 
   } catch (error) {
     if (error.response) {
-      toast.error(error.response.data.msg || "Something went wrong!");
+      toast.error(error.response.data.msg);
     } else {
       toast.error("Network error or server not responding.");
     }
@@ -84,7 +84,7 @@ export const SendEditData = async (attribute) => {
         "protocol": attribute.protocol,
         "statusCheck": attribute.selectedTime,
       }
-      let response = await api.post('/add_monitor_port', result);
+      let response = await api.post('/edit_monitor_port', result);
       toast.success(response.data.msg);
       return true;
     }
@@ -100,14 +100,14 @@ export const SendEditData = async (attribute) => {
       "snmp_port": attribute.ports,
     };
     
-    let response = await api.post('/add_monitor_devices', result);
+    let response = await api.post('/edit_monitor_devices', result);
     toast.success(response.data.msg);
     
     return true;
 
   } catch (error) {
     if (error.response) {
-      toast.error(error.response.data.msg || "Something went wrong!");
+      toast.error(error.response.data.msg);
     } else {
       toast.error("Network error or server not responding.");
     }
@@ -181,7 +181,7 @@ export const handleSelectedTrigger = async (
     });
   } catch (error) {
     if ( error.response ){
-      toast.error(error.response.data.msg || "Something went wrong!");
+      toast.error(error.response.data.msg);
     } else {
       toast.error("An error occurred while creating logs.");
     }
@@ -238,7 +238,7 @@ export const handleSelectedStart = async (
   } catch (error) {
     if ( error.response ){
       toast.update(toastprop, {
-        render: error.response.data.msg || "Something went wrong!",
+        render: error.response.data.msg ,
         type: "error",
         isLoading: false,
         autoClose: 2500,
@@ -304,7 +304,7 @@ export const handleSelectedPause = async (
   } catch (error) {
     if (error.response) {
       toast.update(toastprop, {
-        render: error.response.data.msg || "Something went wrong!",
+        render: error.response.data.msg ,
         type: "error",
         isLoading: false,
         autoClose: 2500,
@@ -371,7 +371,7 @@ export const handleSelectedClear = async (
   } catch (error) {
     if (error.response) {
       toast.update(toastprop, {
-        render: error.response.data.msg || "Something went wrong!",
+        render: error.response.data.msg ,
         type: "error",
         isLoading: false,
         autoClose: 2500,
@@ -438,7 +438,7 @@ export const handleSelectedDelete = async (
   } catch (error) {
     if (error.response) {
       toast.update(toastprop, {
-        render: error.response.data.msg || "Something went wrong!",
+        render: error.response.data.msg ,
         type: "error",
         isLoading: false,
         autoClose: 2500,

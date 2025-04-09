@@ -290,7 +290,7 @@ export default function AddMonitor() {
               { loading ? 
               <div className="animate-spin inline-block size-3 border-3 border-current border-t-transparent text-gray-800 rounded-full dark:text-white" role="status" aria-label="loading">
                 <span className="sr-only">Loading...</span>
-              </div> : 'Save Data'
+              </div> : 'Add Data'
               }
             </button>
 

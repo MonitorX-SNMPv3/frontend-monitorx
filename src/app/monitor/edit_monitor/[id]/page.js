@@ -273,18 +273,18 @@ export default function EditPage({ params }) {
                   </div>
                   <div>
                     <p className="text-xs font-semibold text-gray-400">
-                      {selectedMonitor === 'Ports' && `Protocol`}
-                      {selectedMonitor === 'Devices' && `Username`}
+                      {selectedMonitor === 'ports' && `Protocol`}
+                      {selectedMonitor === 'devices' && `Username`}
                     </p>
                     <p className="text-white text-sm font-bold">
-                      {selectedMonitor === 'Ports' ? protocol : username ? username : 'N/A'}
+                      {selectedMonitor === 'ports' ? protocol : username ? username : 'N/A'}
                     </p>
                   </div>
-                  <div className={`${selectedMonitor === "Devices" ? '' : 'hidden'}`}>
+                  <div className={`${selectedMonitor === "devices" ? '' : 'hidden'}`}>
                     <p className="text-xs font-semibold text-gray-400">Auth Key</p>
                     <p className="text-white text-sm font-bold">{authkey ? authkey : 'N/A'}</p>
                   </div>
-                  <div className={`${selectedMonitor === "Devices" ? '' : 'hidden'}`}>
+                  <div className={`${selectedMonitor === "devices" ? '' : 'hidden'}`}>
                     <p className="text-xs font-semibold text-gray-400">Priv Key</p>
                     <p className="text-white text-sm font-bold">{privkey ? privkey : 'N/A'}</p>
                   </div>
