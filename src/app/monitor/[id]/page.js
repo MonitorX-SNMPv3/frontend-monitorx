@@ -104,27 +104,53 @@ export default function Page({ params }) {
   }
 
   const handleButtonExport = async () => {
+    const toastprop = toast.loading("Loading...");
+  
     try {
       const attribute = {
-        uuid: data.uuidMonitors
+        uuid: data.uuidMonitors,
       };
-      
-      if (data?.type === "devices"){
-        res = await api.post('/monitor_devices_pdf', attribute);
-      } else if ( data?.type === "https" ) {
-        res = await api.post('/monitor_https_pdf', attribute);
-      } else if ( data?.type === "ports" ) {
-        res = await api.post('/monitor_ports_pdf', attribute);
+  
+      let res;
+  
+      if (data?.type === "devices") {
+        res = await api.post('/monitor_devices_pdf', attribute, { responseType: 'blob' });
+      } else if (data?.type === "https") {
+        res = await api.post('/monitor_https_pdf', attribute, { responseType: 'blob' });
+      } else if (data?.type === "ports") {
+        res = await api.post('/monitor_ports_pdf', attribute, { responseType: 'blob' });
       }
-      
+  
+      // Buat URL objek dari blob dan paksa browser untuk download
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+  
+      // Ambil nama file dari header jika tersedia
+      const contentDisposition = res.headers['content-disposition'];
+      const filename = contentDisposition?.split('filename=')[1] || 'monitor-summary.pdf';
+  
+      link.setAttribute('download', filename.replace(/['"]/g, '')); // remove quote if exists
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+  
+      toast.update(toastprop, {
+        render: "Export summary success.",
+        type: "success",
+        isLoading: false,
+        autoClose: 2500,
+      });
     } catch (error) {
-      if (error.response) {
-        toast.error(error.response.data.msg || error.message);
-      } else {
-        toast.error(error.message);
-      }
+      toast.update(toastprop, {
+        render: error?.response?.data?.msg || "Failed to export summary.",
+        type: "error",
+        isLoading: false,
+        autoClose: 2500,
+      });
     }
-  }
+  };
+  
 
   const handdleButtonTestAlert = async () => {
     try {
