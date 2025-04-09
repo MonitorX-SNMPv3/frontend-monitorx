@@ -95,9 +95,6 @@ export default function LoginPage() {
                 <p className="text-sm ml-2 font-regular text-[#9290C3]">Remember Me?</p>
               </label>
             </div>
-            <button className="text-sm font-semibold underline text-[#9290C3] cursor-pointer">
-              Forgot Password?
-            </button>
           </div>
           <button
             onClick={handleButtonSignIn}
