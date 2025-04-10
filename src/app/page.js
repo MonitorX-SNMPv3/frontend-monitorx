@@ -135,7 +135,7 @@ export default function Home() {
 
           <div className="border-1 px-5 py-2 rounded-sm mb-2 border-[#535C91] flex justify-between items-center">
             <h1 className="text-[24px] font-bold">Dashboard</h1>
-            <Link href={'/monitor/add_monitor'} className="bg-[#535C91] text-sm px-5 py-1 rounded-sm font-bold flex items-center gap-1">
+            <Link href={'/monitor/add_monitor'} className={`${user ? user?.type === "USER"  ? 'hidden' : 'flex' : 'hidden'} bg-[#535C91] text-sm px-5 py-1 rounded-sm font-bold flex items-center gap-1`}>
               <img src="/icon-plus.svg" alt="" className="h-4"/>
               <p>Add Monitor</p>
             </Link>

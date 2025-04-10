@@ -284,16 +284,28 @@ export default function Page({ params }) {
                   <button onClick={() => handleTriggerButton()} className="rounded-full h-8 w-8 cursor-pointer bg-[#9290C3] flex items-center justify-center">
                     <img src="/icon-plus.svg" alt="" className="h-5" />
                   </button>
-                  <span className="w-[140px] text-center absolute -top-6 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                  <span className="z-50 w-[140px] text-center absolute -top-6 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
                     Trigger Logs Manually
                   </span>
                 </div>
                 <div className="flex flex-col gap-1">
                   <div className="flex gap-1">
-                    <Link href={`/monitor/edit_monitor/${data?.uuidMonitors}`} className="bg-blue-400 cursor-pointer h-fit text-xs px-5 py-1.5 rounded-sm flex justify-center place-items-center gap-1 hover:bg-white/10">
+                    <Link
+                      href={user && user?.type === "ADMIN" ? `/monitor/edit_monitor/${data?.uuidMonitors}` : "#"}
+                      onClick={(e) => {
+                        if (user && user?.type !== "ADMIN") {
+                          e.preventDefault();
+                          toast.info("Anda Bukan Admin!");
+                        } // prevent navigation
+                      }}
+                      className={`h-fit text-xs px-5 py-1.5 rounded-sm flex justify-center place-items-center gap-1 hover:bg-white/10
+                        ${user ? user?.type === "ADMIN" ? "cursor-pointer bg-blue-500" : "cursor-not-allowed bg-blue-400 opacity-50" : "cursor-not-allowed bg-blue-400 opacity-50"}
+                      `}
+                    >
                       <div>Edit</div>
-                      <img src="/icon-edit.svg" alt="" className="h-[10px] mt-0.5"/>
+                      <img src="/icon-edit.svg" alt="" className="h-[10px] mt-0.5" />
                     </Link>
+
                     <button 
                       onClick={handleButtonExport}
                       className="bg-[#1B1ABB] cursor-pointer h-fit text-xs px-4  py-1.5 rounded-sm flex justify-center place-items-center gap-1 hover:bg-white/10"
@@ -303,9 +315,18 @@ export default function Page({ params }) {
                     </button>
                   </div>
                   <div className="flex gap-1">
-                    <button 
-                      onClick={data?.running === "PAUSED" ? handleButtonStart : handleButtonPause}
-                      className="bg-red-400 cursor-pointer h-fit text-xs px-8  py-1.5 rounded-sm flex justify-center place-items-center gap-1 hover:bg-white/10"
+                    <button
+                      onClick={() => {
+                        if (user?.type === "ADMIN") {
+                          data?.running === "PAUSED" ? handleButtonStart() : handleButtonPause();
+                        } else {
+                          toast.info("Anda Bukan Admin!");
+                        }
+                      }}
+                      className={`
+                        h-fit text-xs px-8 py-1.5 rounded-sm flex justify-center place-items-center gap-1 hover:bg-white/10
+                        ${user?.type === "ADMIN" ? "bg-red-500 cursor-pointer" : "bg-red-400 cursor-not-allowed opacity-50"}
+                      `}
                     >
                       <div>{data?.running === "PAUSED" ? 'Start' : 'Pause'}</div>
                       <img
@@ -314,19 +335,36 @@ export default function Page({ params }) {
                         className={`${data?.running === "PAUSED" ? 'h-[13px]' : 'h-[10px]'} mt-0.5`}
                       />
                     </button>
+
                     <button 
-                      onClick={handdleButtonTestAlert} 
-                      className={`${ loading ? 'px-[46px]' : 'px-5'} bg-green-400 cursor-pointer h-fit text-xs py-1.5 rounded-sm flex justify-center place-items-center gap-1 hover:bg-white/10`}
+                      onClick={() => {
+                        if (user?.type === "ADMIN") {
+                          handdleButtonTestAlert();
+                        } else {
+                          toast.info("Anda Bukan Admin!");
+                        }
+                      }} 
+                      className={`
+                        ${loading ? 'px-[46px]' : 'px-5'} py-1.5 h-fit text-xs rounded-sm flex justify-center place-items-center gap-1 hover:bg-white/10
+                        ${user?.type === "ADMIN" ? "bg-green-500 cursor-pointer" : "bg-green-400 cursor-not-allowed opacity-50"}
+                      `}
                     >
                       <div>
-                        { loading ? 
-                        <div className="animate-spin inline-block size-3 border-3 border-current border-t-transparent text-gray-800 rounded-full dark:text-white" role="status" aria-label="loading">
-                          <span className="sr-only">Loading...</span>
-                        </div> : 'Test Alert'
-                        }
+                        {loading ? (
+                          <div
+                            className="animate-spin inline-block size-3 border-3 border-current border-t-transparent text-gray-800 rounded-full dark:text-white"
+                            role="status"
+                            aria-label="loading"
+                          >
+                            <span className="sr-only">Loading...</span>
+                          </div>
+                        ) : (
+                          'Test Alert'
+                        )}
                       </div>
-                      { !loading && <img src="/icons-notification.svg" alt="" className="h-3 mt-0.5"/> }
+                      {!loading && <img src="/icons-notification.svg" alt="" className="h-3 mt-0.5" />}
                     </button>
+
                   </div>
                 </div>
               </div>

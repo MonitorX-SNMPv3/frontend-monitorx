@@ -83,7 +83,7 @@ export const SendEditData = async (attribute) => {
         "port": attribute.ports,
         "protocol": attribute.protocol,
         "statusCheck": attribute.selectedTime,
-      }
+      }      
       let response = await api.patch('/edit_monitor_ports', result);
       toast.success(response.data.msg);
       return true;
@@ -159,9 +159,9 @@ export const handleSelectedTrigger = async (
       } else if (selectedData.type === "devices") {
         endpoint = "/add_logs_devices";
         payload = { uuidDevices: selectedData.uuidMonitors };
-      } else if (selectedData.type === "port") {
-        endpoint = "/add_logs_port";
-        payload = { uuidPort: selectedData.uuidMonitors };
+      } else if (selectedData.type === "ports") {
+        endpoint = "/add_logs_ports";
+        payload = { uuidPorts: selectedData.uuidMonitors };
       }
 
       const res = await api.post(endpoint, payload);
@@ -391,7 +391,8 @@ export const handleSelectedDelete = async (
   data,
   getData,
   setSelectedMonitors,
-  setActionPop
+  setActionPop,
+  onRefresh
 ) => {
   setActionPop(false);
 
@@ -444,7 +445,7 @@ export const handleSelectedDelete = async (
       });
     } else {
       toast.update(toastprop, {
-        render: "An error occurred while deleting monitor.",
+        render: error.message,
         type: "error",
         isLoading: false,
         autoClose: 2500,
